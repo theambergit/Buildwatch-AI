@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuildWatch AI - Analysis Results</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .page {
+      min-height: 100vh;
+      padding: 30px 20px 48px;
+    }
+
+    .report-header {
+      max-width: 1180px;
+      margin: 0 auto 26px;
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    .report-header h1 {
+      font-size: clamp(2rem, 5vw, 3.8rem);
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    .report-header p {
+      max-width: 760px;
+      color: var(--text-secondary);
+      font-size: 1.04rem;
+    }
+
+    .report-meta {
+      min-width: 210px;
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--text-tertiary);
+      font-size: 0.88rem;
+    }
+
+    .report-meta strong {
+      display: block;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .metrics {
+      max-width: 1180px;
+      margin: 0 auto 24px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .metric {
+      border: 1px solid var(--border-light);
+      border-radius: 14px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .metric span {
+      display: block;
+      color: var(--text-tertiary);
+      font-size: 0.86rem;
+      margin-bottom: 6px;
+    }
+
+    .metric strong {
+      display: block;
+      color: var(--text-primary);
+      font-size: 1.8rem;
+      line-height: 1.1;
+    }
+
+    .risk-pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 8px 13px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 1rem;
+    }
+
+    .risk-high {
+      background: rgba(239, 68, 68, 0.16);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+    }
+
+    .risk-medium {
+      background: rgba(245, 158, 11, 0.16);
+      color: #fcd34d;
+      border: 1px solid rgba(245, 158, 11, 0.35);
+    }
+
+    .risk-low {
+      background: rgba(34, 197, 94, 0.16);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.35);
+    }
+
+    .report-grid {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+      gap: 22px;
+      align-items: start;
+    }
+
+    .comparison-card,
+    .insight-card,
+    .image-card {
+      border: 1px solid var(--border-light);
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.72);
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(2, 6, 23, 0.28);
+    }
+
+    .card-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .card-head h2,
+    .card-head h3 {
+      font-size: 1rem;
+      margin: 0;
+      color: var(--text-primary);
+    }
+
+    .card-head span {
+      color: var(--text-tertiary);
+      font-size: 0.82rem;
+    }
+
+    .comparison {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      user-select: none;
+      overflow: hidden;
+      background: #020617;
+    }
+
+    .comparison img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .after-layer {
+      position: absolute;
+      inset: 0;
+      width: 50%;
+      overflow: hidden;
+    }
+
+    .after-layer img {
+      width: 100%;
+      max-width: none;
+    }
+
+    .slider-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 3px;
+      background: var(--secondary);
+      transform: translateX(-50%);
+      z-index: 3;
+    }
+
+    .slider-knob {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 46px;
+      height: 46px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.35);
+      background: var(--gradient-primary);
+      color: white;
+      display: grid;
+      place-items: center;
+      transform: translate(-50%, -50%);
+      cursor: ew-resize;
+      z-index: 4;
+      font-weight: 900;
+      box-shadow: 0 10px 24px rgba(6, 182, 212, 0.28);
+    }
+
+    .compare-label {
+      position: absolute;
+      top: 14px;
+      z-index: 5;
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: rgba(2, 6, 23, 0.72);
+      color: white;
+      font-size: 0.82rem;
+      font-weight: 800;
+    }
+
+    .compare-label.before {
+      left: 14px;
+    }
+
+    .compare-label.after {
+      right: 14px;
+    }
+
+    .insight-card {
+      padding-bottom: 18px;
+    }
+
+    .insight-body {
+      padding: 18px;
+    }
+
+    .insight-body p {
+      margin-bottom: 14px;
+      color: var(--text-secondary);
+    }
+
+    .finding {
+      padding: 14px;
+      border-radius: 12px;
+      border-left: 3px solid var(--secondary);
+      background: rgba(6, 182, 212, 0.1);
+      color: var(--text-primary);
+      line-height: 1.7;
+    }
+
+    .pipeline {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .pipeline div {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+    }
+
+    .pipeline b {
+      width: 26px;
+      height: 26px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--secondary);
+    }
+
+    .image-grid {
+      max-width: 1180px;
+      margin: 22px auto 0;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .image-card img {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      object-fit: cover;
+      display: block;
+      background: #020617;
+    }
+
+    .image-card p {
+      padding: 12px 14px 15px;
+      color: var(--text-tertiary);
+      font-size: 0.88rem;
+    }
+
+    .actions {
+      max-width: 1180px;
+      margin: 24px auto 0;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    @media print {
+      .actions {
+        display: none;
+      }
+
+      body {
+        background: #fff;
+        color: #111827;
+      }
+    }
+
+    @media (max-width: 960px) {
+      .report-header,
+      .report-grid {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .image-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .page {
+        padding: 22px 14px 36px;
+      }
+
+      .metrics {
+        grid-template-columns: 1fr;
+      }
+
+      .actions .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="report-header">
+      <div>
+        <h1>Analysis Complete</h1>
+        <p>{{ summary }}</p>
+      </div>
+      <div class="report-meta">
+        <strong>Report generated</strong>
+        {{ timestamp }}<br>
+        {{ image_dimensions }} px
+      </div>
+    </header>
+
+    <section class="metrics" aria-label="Analysis metrics">
+      <div class="metric">
+        <span>Scene Change</span>
+        <strong>{{ confidence }}%</strong>
+      </div>
+      <div class="metric">
+        <span>Changed Regions</span>
+        <strong>{{ regions }}</strong>
+      </div>
+      <div class="metric">
+        <span>YOLO Objects</span>
+        <strong>{{ yolo_detections }}</strong>
+      </div>
+      <div class="metric">
+        <span>Risk Level</span>
+        <strong><span class="risk-pill risk-{{ risk.lower() }}">{{ risk }}</span></strong>
+      </div>
+    </section>
+
+    <section class="report-grid">
+      <article class="comparison-card">
+        <div class="card-head">
+          <h2>Before / After Comparison</h2>
+          <span>Drag the handle</span>
+        </div>
+        <div class="comparison" id="comparison">
+          <img src="{{ images.before }}" alt="Historical site image">
+          <div class="after-layer" id="afterLayer">
+            <img src="{{ images.after }}" alt="Current site image" id="afterCompareImage">
+          </div>
+          <div class="slider-line" id="sliderLine"></div>
+          <button class="slider-knob" id="sliderKnob" type="button" aria-label="Move comparison slider">↔</button>
+          <span class="compare-label before">Before</span>
+          <span class="compare-label after">After</span>
+        </div>
+      </article>
+
+      <aside class="insight-card">
+        <div class="card-head">
+          <h3>AI Assessment</h3>
+          <span>{{ changed_pixels }} changed pixels</span>
+        </div>
+        <div class="insight-body">
+          <p>The analysis uses grayscale normalization, blur-based noise reduction, binary thresholding, contour filtering, and YOLO object detection on the current frame.</p>
+          <div class="finding">{{ summary }} Manual verification is recommended before compliance or enforcement action.</div>
+
+          <div class="pipeline" aria-label="Processing pipeline">
+            <div><b>1</b> Validate and align image dimensions</div>
+            <div><b>2</b> Detect pixel-level scene differences</div>
+            <div><b>3</b> Filter noise and extract changed regions</div>
+            <div><b>4</b> Run object detection for context</div>
+            <div><b>5</b> Generate risk score and visuals</div>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="image-grid" aria-label="Generated analysis images">
+      <article class="image-card">
+        <div class="card-head"><h3>Detected Changes</h3></div>
+        <img src="{{ images.result }}" alt="Annotated changed regions">
+        <p>Current image annotated with detected change regions and YOLO objects.</p>
+      </article>
+
+      <article class="image-card">
+        <div class="card-head"><h3>Difference Mask</h3></div>
+        <img src="{{ images.mask }}" alt="Binary difference mask">
+        <p>White areas show the pixels that changed beyond the configured threshold.</p>
+      </article>
+
+      <article class="image-card">
+        <div class="card-head"><h3>Change Heatmap</h3></div>
+        <img src="{{ images.heatmap }}" alt="Change intensity heatmap">
+        <p>Heatmap view for quickly scanning intensity across the monitored scene.</p>
+      </article>
+    </section>
+
+    <div class="actions">
+      <a class="btn btn-secondary" href="{{ images.result }}" download>Download Result Image</a>
+      <button class="btn btn-secondary" type="button" onclick="window.print()">Print Report</button>
+      <a class="btn btn-primary" href="/">Analyze Another Site</a>
+    </div>
+  </main>
+
+  <script>
+    const comparison = document.getElementById('comparison');
+    const afterLayer = document.getElementById('afterLayer');
+    const afterCompareImage = document.getElementById('afterCompareImage');
+    const sliderLine = document.getElementById('sliderLine');
+    const sliderKnob = document.getElementById('sliderKnob');
+    let dragging = false;
+
+    function syncAfterImageWidth() {
+      afterCompareImage.style.width = `${comparison.getBoundingClientRect().width}px`;
+    }
+
+    function setSlider(clientX) {
+      const rect = comparison.getBoundingClientRect();
+      const x = Math.min(Math.max(clientX - rect.left, 0), rect.width);
+      const percent = (x / rect.width) * 100;
+      afterLayer.style.width = `${percent}%`;
+      sliderLine.style.left = `${percent}%`;
+      sliderKnob.style.left = `${percent}%`;
+    }
+
+    function pointerX(event) {
+      return event.touches ? event.touches[0].clientX : event.clientX;
+    }
+
+    sliderKnob.addEventListener('mousedown', () => { dragging = true; });
+    sliderKnob.addEventListener('touchstart', () => { dragging = true; }, { passive: true });
+    comparison.addEventListener('click', (event) => setSlider(event.clientX));
+
+    document.addEventListener('mousemove', (event) => {
+      if (dragging) setSlider(pointerX(event));
+    });
+
+    document.addEventListener('touchmove', (event) => {
+      if (dragging) setSlider(pointerX(event));
+    }, { passive: true });
+
+    document.addEventListener('mouseup', () => { dragging = false; });
+    document.addEventListener('touchend', () => { dragging = false; });
+    window.addEventListener('resize', syncAfterImageWidth);
+    syncAfterImageWidth();
+  </script>
+</body>
+</html>

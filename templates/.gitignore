@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+
+static/*.jpg
+static/*.png
+
+before.jpg
+after.jpg
+
+yolov8n.pt
