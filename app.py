@@ -6,9 +6,8 @@ import gc
 from pathlib import Path
 from uuid import uuid4
 
-MPLCONFIGDIR = os.path.join("/tmp", "buildwatch-matplotlib")
-os.environ.setdefault("MPLCONFIGDIR", MPLCONFIGDIR)
-os.makedirs(os.environ["MPLCONFIGDIR"], exist_ok=True)
+# Suppress matplotlib font cache (not used, but some deps reference it)
+os.environ.setdefault("MPLCONFIGDIR", "/tmp")
 
 from flask import Flask, render_template, request, jsonify, redirect, url_for, send_from_directory
 from werkzeug.utils import secure_filename
@@ -71,18 +70,29 @@ COCO_NAMES = [
     "refrigerator","book","clock","vase","scissors","teddy bear","hair drier","toothbrush"
 ]
 
-# Load YOLO ONNX model via onnxruntime (no torch needed, ~15MB RAM)
-try:
-    ort_session = ort.InferenceSession(
-        str(MODEL_PATH),
-        providers=['CPUExecutionProvider']
-    )
-    _input_name = ort_session.get_inputs()[0].name
-    logger.info("YOLO ONNX model loaded successfully via onnxruntime")
-except Exception as e:
-    logger.error(f"Failed to load YOLO ONNX model: {str(e)}")
-    ort_session = None
-    _input_name = None
+# Lazy-loaded ONNX session — only allocates RAM when first analysis runs
+_ort_session = None
+_input_name = None
+
+def _get_ort_session():
+    """Lazy-load ONNX model on first use to minimize idle RAM."""
+    global _ort_session, _input_name
+    if _ort_session is None:
+        try:
+            sess_options = ort.SessionOptions()
+            sess_options.intra_op_num_threads = 1  # Minimize thread memory
+            sess_options.inter_op_num_threads = 1
+            sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+            _ort_session = ort.InferenceSession(
+                str(MODEL_PATH),
+                sess_options=sess_options,
+                providers=['CPUExecutionProvider']
+            )
+            _input_name = _ort_session.get_inputs()[0].name
+            logger.info("YOLO ONNX model loaded (lazy)")
+        except Exception as e:
+            logger.error(f"Failed to load YOLO ONNX model: {str(e)}")
+    return _ort_session, _input_name
 
 
 def allowed_file(filename):
@@ -185,7 +195,7 @@ def detect_changes(before_img, after_img):
         
         # Calculate difference
         diff = cv2.absdiff(gray1, gray2)
-        del gray1, gray2  # Free memory
+        del gray1, gray2  # Free memory immediately
         
         # Threshold
         _, thresh = cv2.threshold(
@@ -194,11 +204,13 @@ def detect_changes(before_img, after_img):
             255,
             cv2.THRESH_BINARY
         )
+        del diff  # Free diff immediately
         
         # Morphological operations
         kernel = np.ones(MORPHOLOGY_KERNEL_SIZE, np.uint8)
         thresh = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, kernel)
         thresh = cv2.dilate(thresh, kernel, iterations=2)
+        del kernel
         
         logger.info("Change detection completed successfully")
         return thresh
@@ -208,24 +220,25 @@ def detect_changes(before_img, after_img):
         return None
 
 
-def save_output_images(thresh, after_img, before_img, clean_after_img, analysis_id):
-    """Save mask, heatmap, and result images."""
+def save_output_images(thresh, after_img, before_img, after_img_clean, analysis_id):
+    """Save mask, heatmap, and result images. Frees memory as it goes."""
     try:
         output_dir = ANALYSIS_FOLDER / analysis_id
 
         # Save mask
         save_cv_image(output_dir / "mask.jpg", thresh)
         
-        # Create and save heatmap
+        # Create heatmap, save, and immediately free
         heatmap = cv2.applyColorMap(thresh, cv2.COLORMAP_JET)
         save_cv_image(output_dir / "heatmap.jpg", heatmap)
+        del heatmap  # Free ~2MB
         
-        # Save result image
+        # Save result (annotated) image
         save_cv_image(output_dir / "result.jpg", after_img)
 
-        # Save comparison images
+        # Save before and after originals
         save_cv_image(output_dir / "before.jpg", before_img)
-        save_cv_image(output_dir / "after.jpg", clean_after_img)
+        save_cv_image(output_dir / "after.jpg", after_img_clean)
         
         logger.info("Output images saved successfully")
         return {
@@ -364,7 +377,8 @@ def yolo_detection(after_path, after_img):
     """Perform YOLO object detection using raw ONNX Runtime (no torch)."""
     detected_objects = []
 
-    if ort_session is None:
+    session, input_name = _get_ort_session()
+    if session is None:
         logger.warning("YOLO ONNX model not available, skipping detection")
         return detected_objects
 
@@ -373,7 +387,7 @@ def yolo_detection(after_path, after_img):
         blob, scale, pad_top, pad_left = _yolo_preprocess(after_img)
 
         # Run inference
-        outputs = ort_session.run(None, {_input_name: blob})
+        outputs = session.run(None, {input_name: blob})
         preds = outputs[0]  # shape: (1, 84, 8400) for YOLOv8
 
         # Transpose to (8400, 84): each row = [cx, cy, w, h, class_scores...]
@@ -484,7 +498,11 @@ def calculate_confidence(thresh):
 
 
 def analyze_image_pair(before_path, after_path, analysis_id=None):
-    """Run the full analysis pipeline and return template/API-ready data."""
+    """Run the full analysis pipeline and return template/API-ready data.
+    
+    Memory-optimized: deletes arrays as soon as they're no longer needed
+    to stay well under 512MB on Render free tier.
+    """
     t_start = time.perf_counter()
     analysis_id = analysis_id or new_analysis_id()
 
@@ -492,25 +510,38 @@ def analyze_image_pair(before_path, after_path, analysis_id=None):
     if before_img is None:
         raise ValueError(msg)
 
-    after_img_annotated = after_img.copy()
+    # Store dimensions before any processing
+    img_h, img_w = before_img.shape[0], before_img.shape[1]
+    total_pixels = img_h * img_w
+
+    # Step 1: Change detection (grayscale diff → thresh)
     thresh = detect_changes(before_img, after_img)
     if thresh is None:
         raise RuntimeError("Change detection failed. Please try another image pair.")
 
-    detected_regions, regions_data = detect_contours(thresh, after_img_annotated)
-    yolo_objects = yolo_detection(after_path, after_img_annotated)
-    total_pixels = before_img.shape[0] * before_img.shape[1]
     changed_pixels = int(cv2.countNonZero(thresh))
     confidence_score = round((changed_pixels / total_pixels) * 100, 2) if total_pixels > 0 else 0.0
     risk = calculate_risk_level(confidence_score)
 
+    # Step 2: Contour detection (draws on after_img directly — no .copy())
+    detected_regions, regions_data = detect_contours(thresh, after_img)
+
+    # Step 3: YOLO detection (draws on after_img directly)
+    yolo_objects = yolo_detection(after_path, after_img)
+
+    # Step 4: Save outputs — frees heatmap immediately inside
     output_images = save_output_images(
         thresh,
-        after_img_annotated,
+        after_img,       # now has contours + YOLO annotations
         before_img,
-        after_img,
+        after_img,       # same ref, saved as "after" too
         analysis_id
     )
+
+    # Free the big arrays NOW
+    del before_img, after_img, thresh
+    gc.collect()
+
     if output_images is None:
         raise RuntimeError("Could not save analysis results. Please try again.")
 
@@ -522,7 +553,6 @@ def analyze_image_pair(before_path, after_path, analysis_id=None):
     )
 
     processing_time_ms = round((time.perf_counter() - t_start) * 1000)
-
     timestamp_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     res = {
@@ -535,9 +565,9 @@ def analyze_image_pair(before_path, after_path, analysis_id=None):
         "yolo_objects": yolo_objects,
         "output_images": output_images,
         "summary": summary,
-        "width": before_img.shape[1],
-        "height": before_img.shape[0],
-        "total_pixels": before_img.shape[0] * before_img.shape[1],
+        "width": img_w,
+        "height": img_h,
+        "total_pixels": total_pixels,
         "changed_pixels": changed_pixels,
         "processing_time_ms": processing_time_ms
     }
@@ -549,10 +579,6 @@ def analyze_image_pair(before_path, after_path, analysis_id=None):
             json.dump(res, f)
     except Exception as e:
         logger.error(f"Failed to save summary JSON: {e}")
-
-    # Aggressive garbage collection to keep memory under 512MB
-    del before_img, after_img, thresh, after_img_annotated
-    gc.collect()
 
     return res
 

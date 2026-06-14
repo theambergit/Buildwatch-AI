@@ -36,8 +36,8 @@ class Config:
         int(os.getenv("MORPHOLOGY_KERNEL_SIZE", 5)),
         int(os.getenv("MORPHOLOGY_KERNEL_SIZE", 5))
     )
-    MAX_IMAGE_DIMENSION = int(os.getenv("MAX_IMAGE_DIMENSION", 800))
-    JPEG_QUALITY = int(os.getenv("JPEG_QUALITY", 70))
+    MAX_IMAGE_DIMENSION = int(os.getenv("MAX_IMAGE_DIMENSION", 640))
+    JPEG_QUALITY = int(os.getenv("JPEG_QUALITY", 60))
     
     # Logging
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
