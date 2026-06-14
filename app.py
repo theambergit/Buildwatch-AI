@@ -2,6 +2,7 @@ import logging
 import os
 import time
 import json
+import gc
 from pathlib import Path
 from uuid import uuid4
 
@@ -457,6 +458,10 @@ def analyze_image_pair(before_path, after_path, analysis_id=None):
             json.dump(res, f)
     except Exception as e:
         logger.error(f"Failed to save summary JSON: {e}")
+
+    # Aggressive garbage collection to keep memory under 512MB
+    del before_img, after_img, thresh, after_img_annotated
+    gc.collect()
 
     return res
 
