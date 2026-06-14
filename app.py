@@ -12,7 +12,7 @@ os.makedirs(os.environ["MPLCONFIGDIR"], exist_ok=True)
 
 from flask import Flask, render_template, request, jsonify, redirect, url_for, send_from_directory
 from werkzeug.utils import secure_filename
-from ultralytics import YOLO
+import onnxruntime as ort
 import cv2
 import numpy as np
 from datetime import datetime
@@ -57,13 +57,32 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 31536000  # 1 year cache for static fi
 UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
 ANALYSIS_FOLDER.mkdir(parents=True, exist_ok=True)
 
-# Load YOLO model
+# COCO class names for YOLOv8
+COCO_NAMES = [
+    "person","bicycle","car","motorcycle","airplane","bus","train","truck","boat",
+    "traffic light","fire hydrant","stop sign","parking meter","bench","bird","cat",
+    "dog","horse","sheep","cow","elephant","bear","zebra","giraffe","backpack",
+    "umbrella","handbag","tie","suitcase","frisbee","skis","snowboard","sports ball",
+    "kite","baseball bat","baseball glove","skateboard","surfboard","tennis racket",
+    "bottle","wine glass","cup","fork","knife","spoon","bowl","banana","apple",
+    "sandwich","orange","broccoli","carrot","hot dog","pizza","donut","cake",
+    "chair","couch","potted plant","bed","dining table","toilet","tv","laptop",
+    "mouse","remote","keyboard","cell phone","microwave","oven","toaster","sink",
+    "refrigerator","book","clock","vase","scissors","teddy bear","hair drier","toothbrush"
+]
+
+# Load YOLO ONNX model via onnxruntime (no torch needed, ~15MB RAM)
 try:
-    model = YOLO(str(MODEL_PATH))
-    logger.info("YOLO model loaded successfully")
+    ort_session = ort.InferenceSession(
+        str(MODEL_PATH),
+        providers=['CPUExecutionProvider']
+    )
+    _input_name = ort_session.get_inputs()[0].name
+    logger.info("YOLO ONNX model loaded successfully via onnxruntime")
 except Exception as e:
-    logger.error(f"Failed to load YOLO model: {str(e)}")
-    model = None
+    logger.error(f"Failed to load YOLO ONNX model: {str(e)}")
+    ort_session = None
+    _input_name = None
 
 
 def allowed_file(filename):
@@ -301,67 +320,139 @@ def detect_contours(thresh, after_img):
         return 0, []
 
 
+def _yolo_preprocess(img, input_size=640):
+    """Preprocess image for YOLOv8 ONNX: letterbox resize, normalize, NCHW."""
+    h, w = img.shape[:2]
+    scale = min(input_size / h, input_size / w)
+    nh, nw = int(h * scale), int(w * scale)
+    resized = cv2.resize(img, (nw, nh), interpolation=cv2.INTER_LINEAR)
+
+    # Create letterboxed canvas
+    canvas = np.full((input_size, input_size, 3), 114, dtype=np.uint8)
+    top, left = (input_size - nh) // 2, (input_size - nw) // 2
+    canvas[top:top+nh, left:left+nw] = resized
+
+    # BGR→RGB, HWC→CHW, normalize 0-1, add batch dim
+    blob = canvas[:, :, ::-1].astype(np.float32) / 255.0
+    blob = np.transpose(blob, (2, 0, 1))[np.newaxis, ...]
+    return blob, scale, top, left
+
+
+def _yolo_nms(boxes, scores, iou_threshold=0.45):
+    """Simple NMS (non-maximum suppression) using numpy."""
+    if len(boxes) == 0:
+        return []
+    x1 = boxes[:, 0]; y1 = boxes[:, 1]
+    x2 = boxes[:, 2]; y2 = boxes[:, 3]
+    areas = (x2 - x1) * (y2 - y1)
+    order = scores.argsort()[::-1]
+    keep = []
+    while order.size > 0:
+        i = order[0]
+        keep.append(i)
+        xx1 = np.maximum(x1[i], x1[order[1:]])
+        yy1 = np.maximum(y1[i], y1[order[1:]])
+        xx2 = np.minimum(x2[i], x2[order[1:]])
+        yy2 = np.minimum(y2[i], y2[order[1:]])
+        inter = np.maximum(0, xx2 - xx1) * np.maximum(0, yy2 - yy1)
+        iou = inter / (areas[i] + areas[order[1:]] - inter + 1e-6)
+        order = order[1:][iou <= iou_threshold]
+    return keep
+
+
 def yolo_detection(after_path, after_img):
-    """Perform YOLO object detection."""
+    """Perform YOLO object detection using raw ONNX Runtime (no torch)."""
     detected_objects = []
-    
-    if model is None:
-        logger.warning("YOLO model not available, skipping detection")
+
+    if ort_session is None:
+        logger.warning("YOLO ONNX model not available, skipping detection")
         return detected_objects
-    
+
     try:
-        results = model(after_img)
-        
-        for r in results:
-            boxes = r.boxes
-            
-            if boxes is None:
-                continue
-            
-            for box in boxes:
-                confidence = float(box.conf[0])
-                
-                if confidence < YOLO_CONFIDENCE_THRESHOLD:
-                    continue
-                
-                cls = int(box.cls[0])
-                x1, y1, x2, y2 = map(int, box.xyxy[0])
-                label = model.names[cls]
-                
-                # Draw rectangle
-                cv2.rectangle(
-                    after_img,
-                    (x1, y1),
-                    (x2, y2),
-                    (0, 255, 0),
-                    2
-                )
-                
-                # Add text label
-                cv2.putText(
-                    after_img,
-                    f"{label} {confidence:.2f}",
-                    (x1, max(y1 - 10, 20)),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.6,
-                    (0, 255, 0),
-                    2
-                )
-                
-                detected_objects.append({
-                    "label": label,
-                    "confidence": float(confidence),
-                    "x1": int(x1),
-                    "y1": int(y1),
-                    "x2": int(x2),
-                    "y2": int(y2)
-                })
-        
+        h_orig, w_orig = after_img.shape[:2]
+        blob, scale, pad_top, pad_left = _yolo_preprocess(after_img)
+
+        # Run inference
+        outputs = ort_session.run(None, {_input_name: blob})
+        preds = outputs[0]  # shape: (1, 84, 8400) for YOLOv8
+
+        # Transpose to (8400, 84): each row = [cx, cy, w, h, class_scores...]
+        preds = preds[0].T
+
+        # Extract boxes and class scores
+        cx, cy, bw, bh = preds[:, 0], preds[:, 1], preds[:, 2], preds[:, 3]
+        class_scores = preds[:, 4:]  # 80 COCO classes
+
+        # Best class per detection
+        class_ids = np.argmax(class_scores, axis=1)
+        confidences = class_scores[np.arange(len(class_ids)), class_ids]
+
+        # Filter by confidence
+        mask = confidences >= YOLO_CONFIDENCE_THRESHOLD
+        if not np.any(mask):
+            return detected_objects
+
+        cx, cy, bw, bh = cx[mask], cy[mask], bw[mask], bh[mask]
+        confidences = confidences[mask]
+        class_ids = class_ids[mask]
+
+        # Convert center-wh to xyxy
+        x1 = cx - bw / 2; y1 = cy - bh / 2
+        x2 = cx + bw / 2; y2 = cy + bh / 2
+        boxes = np.stack([x1, y1, x2, y2], axis=1)
+
+        # NMS
+        keep = _yolo_nms(boxes, confidences)
+        boxes = boxes[keep]
+        confidences = confidences[keep]
+        class_ids = class_ids[keep]
+
+        # Scale boxes back to original image coordinates
+        for i in range(len(boxes)):
+            bx1 = int((boxes[i][0] - pad_left) / scale)
+            by1 = int((boxes[i][1] - pad_top) / scale)
+            bx2 = int((boxes[i][2] - pad_left) / scale)
+            by2 = int((boxes[i][3] - pad_top) / scale)
+
+            # Clamp to image bounds
+            bx1 = max(0, min(bx1, w_orig - 1))
+            by1 = max(0, min(by1, h_orig - 1))
+            bx2 = max(0, min(bx2, w_orig - 1))
+            by2 = max(0, min(by2, h_orig - 1))
+
+            conf = float(confidences[i])
+            cls_id = int(class_ids[i])
+            label = COCO_NAMES[cls_id] if cls_id < len(COCO_NAMES) else f"class_{cls_id}"
+
+            # Draw rectangle
+            cv2.rectangle(after_img, (bx1, by1), (bx2, by2), (0, 255, 0), 2)
+
+            # Add text label
+            cv2.putText(
+                after_img,
+                f"{label} {conf:.2f}",
+                (bx1, max(by1 - 10, 20)),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.6,
+                (0, 255, 0),
+                2
+            )
+
+            detected_objects.append({
+                "label": label,
+                "confidence": round(conf, 3),
+                "x1": bx1, "y1": by1,
+                "x2": bx2, "y2": by2
+            })
+
+        # Free inference memory
+        del blob, preds, outputs
+
         logger.info(f"YOLO detection found {len(detected_objects)} objects")
-    
+
     except Exception as e:
         logger.error(f"YOLO Detection Error: {str(e)}")
-    
+
     return detected_objects
 
 
