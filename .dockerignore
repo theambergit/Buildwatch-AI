@@ -1,0 +1,29 @@
+# Git
+.git
+.gitignore
+
+# Python virtual environment and caches
+.venv/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Local config & secret keys
+.env
+.env.local
+.env.*.local
+
+# Media storage - do not bundle uploads or past analyses
+static/analyses/*
+uploads/*
+logs/
+*.log
+
+# Matplotlib cache
+buildwatch-matplotlib/
+
+# OS specific files
+.DS_Store
+Thumbs.db

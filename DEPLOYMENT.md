@@ -47,94 +47,39 @@ python app.py
 
 ## Docker Deployment
 
-### Build Docker Image
+The `Dockerfile`, `.dockerignore`, and `docker-compose.yml` are already pre-configured and provided in the root directory.
 
-```dockerfile
-# Dockerfile
-FROM python:3.9-slim
+### Quick Start with Docker Compose
 
-WORKDIR /app
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    libgl1-mesa-glx \
-    libsm6 \
-    libxext6 \
-    && rm -rf /var/lib/apt/lists/*
-
-# Copy requirements
-COPY requirements.txt .
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application
-COPY . .
-
-# Create uploads directory
-RUN mkdir -p static uploads
-
-# Expose port
-EXPOSE 5000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:5000/health')"
-
-# Run application
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "--timeout", "120", "app:app"]
-```
-
-### Build and Run
+Running the entire stack with data persistence is as simple as running:
 
 ```bash
-# Build image
+# Build and start container in the background
+docker-compose up --build -d
+
+# Check service logs
+docker-compose logs -f
+
+# Shut down service
+docker-compose down
+```
+
+Visit `http://localhost:5000` to access the application.
+
+### Build and Run Manually
+
+If you prefer building and running the Docker container manually:
+
+```bash
+# Build the image
 docker build -t buildwatch-ai:latest .
 
-# Run container
-docker run -p 5000:5000 \
-  -v $(pwd)/static:/app/static \
-  -e FLASK_ENV=production \
+# Run the container (mounting the static directory for local storage persistence)
+docker run -d -p 5000:5000 \
+  -v $(pwd)/static/analyses:/app/static/analyses \
+  -v $(pwd)/uploads:/app/uploads \
+  --name buildwatch_app \
   buildwatch-ai:latest
-
-# With environment file
-docker run -p 5000:5000 \
-  --env-file .env \
-  -v $(pwd)/static:/app/static \
-  buildwatch-ai:latest
-```
-
-### Docker Compose
-
-```yaml
-# docker-compose.yml
-version: '3.8'
-
-services:
-  buildwatch-ai:
-    build: .
-    ports:
-      - "5000:5000"
-    volumes:
-      - ./static:/app/static
-      - ./logs:/app/logs
-    environment:
-      - FLASK_ENV=production
-      - FLASK_DEBUG=False
-      - HOST=0.0.0.0
-      - PORT=5000
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-```
-
-Run with Docker Compose:
-```bash
-docker-compose up -d
 ```
 
 ---

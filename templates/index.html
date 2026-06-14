@@ -3,187 +3,132 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BuildWatch AI</title>
+  <title>BuildWatch AI — Intelligent Construction Monitoring</title>
+  <meta name="description" content="AI-powered construction monitoring. Upload before and after site imagery to detect changes, assess risk, and generate actionable reports with YOLO object detection.">
+  <meta name="keywords" content="construction monitoring, AI, change detection, YOLO, site analysis, BuildWatch">
+  <meta name="author" content="BuildWatch AI">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="BuildWatch AI — Intelligent Construction Monitoring">
+  <meta property="og:description" content="Spot construction changes before they become surprises. AI-powered change detection and risk assessment from satellite and drone imagery.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="/">
+  <meta property="og:site_name" content="BuildWatch AI">
+
   <link rel="stylesheet" href="/static/style.css">
   <style>
-    .app-shell {
-      min-height: 100vh;
-      padding: 32px 20px 48px;
+    /* ── Hero ── */
+    .hero {
+      max-width: 640px;
+      margin-bottom: var(--space-2xl);
     }
 
-    .topbar {
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.08;
+      margin-bottom: 14px;
+      background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero .accent-dot {
+      -webkit-text-fill-color: var(--accent);
+      background: none;
+    }
+
+    .hero p {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      font-weight: 400;
+      max-width: 480px;
+      line-height: 1.6;
+    }
+
+    /* ── Upload Panel ── */
+    .upload-panel {
+      position: relative;
+      max-width: 680px;
+    }
+
+    .panel-header {
+      margin-bottom: var(--space-lg);
+    }
+
+    .panel-header h2 {
+      font-size: 1.3rem;
+      margin-bottom: 4px;
+    }
+
+    .panel-header p {
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+    }
+
+    /* ── Error Banner ── */
+    .error-banner {
+      margin-bottom: var(--space-md);
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--danger);
+      background: var(--danger-bg);
+      color: var(--danger-text);
+      font-weight: 500;
+      font-size: 0.88rem;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 20px;
-      max-width: 1180px;
-      margin: 0 auto 36px;
+      gap: 10px;
+      animation: fadeInDown 0.4s var(--ease-out-expo) both;
     }
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: var(--text-primary);
-      font-weight: 800;
-      font-size: 1.1rem;
-    }
-
-    .brand-mark {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
+    .error-banner-icon {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.3);
       display: grid;
       place-items: center;
-      background: var(--gradient-primary);
-      box-shadow: 0 12px 28px rgba(6, 182, 212, 0.24);
+      font-size: 0.65rem;
+      color: var(--danger);
     }
 
-    .topbar-meta {
-      color: var(--text-tertiary);
-      font-size: 0.92rem;
-    }
-
-    .workspace {
-      display: grid;
-      grid-template-columns: minmax(0, 0.95fr) minmax(420px, 1.25fr);
-      gap: 28px;
-      max-width: 1180px;
-      margin: 0 auto;
-      align-items: start;
-    }
-
-    .overview {
-      padding-top: 20px;
-    }
-
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border: 1px solid var(--border-light);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.06);
-      color: var(--secondary);
-      font-size: 0.86rem;
-      font-weight: 700;
-      margin-bottom: 22px;
-    }
-
-    .overview h1 {
-      max-width: 680px;
-      font-size: clamp(2.35rem, 6vw, 4.85rem);
-      line-height: 0.98;
-      margin-bottom: 20px;
-    }
-
-    .overview-copy {
-      max-width: 620px;
-      color: var(--text-secondary);
-      font-size: 1.08rem;
-      line-height: 1.8;
-      margin-bottom: 28px;
-    }
-
-    .signal-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 14px;
-      max-width: 620px;
-    }
-
-    .signal {
-      border: 1px solid var(--border-light);
-      border-radius: 12px;
-      padding: 16px;
-      background: rgba(255, 255, 255, 0.045);
-    }
-
-    .signal strong {
-      display: block;
-      margin-bottom: 4px;
-      color: var(--text-primary);
-    }
-
-    .signal span {
-      color: var(--text-tertiary);
-      font-size: 0.92rem;
-    }
-
-    .upload-panel {
-      border: 1px solid var(--border-light);
-      border-radius: 18px;
-      padding: 22px;
-      background: rgba(15, 23, 42, 0.74);
-      box-shadow: 0 24px 80px rgba(2, 6, 23, 0.36);
-      backdrop-filter: blur(22px);
-    }
-
-    .panel-title {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-
-    .panel-title h2 {
-      font-size: 1.35rem;
-      margin-bottom: 4px;
-    }
-
-    .panel-title p {
-      color: var(--text-tertiary);
-      font-size: 0.95rem;
-    }
-
-    .status-pill {
-      padding: 7px 11px;
-      border-radius: 999px;
-      background: rgba(34, 197, 94, 0.12);
-      color: #86efac;
-      border: 1px solid rgba(34, 197, 94, 0.24);
-      font-size: 0.8rem;
-      font-weight: 700;
-      white-space: nowrap;
-    }
-
-    .error-banner {
-      margin-bottom: 18px;
-      padding: 12px 14px;
-      border-radius: 12px;
-      border: 1px solid rgba(239, 68, 68, 0.35);
-      background: rgba(239, 68, 68, 0.12);
-      color: #fecaca;
-      font-weight: 600;
-    }
-
+    /* ── Upload Grid ── */
     .upload-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
     }
 
+    /* ── Drop Zones ── */
     .drop-zone {
       position: relative;
-      min-height: 300px;
-      border: 1px dashed var(--border-mid);
-      border-radius: 14px;
-      background: rgba(2, 6, 23, 0.46);
+      min-height: 230px;
+      border: 1.5px dashed var(--border-mid);
+      border-radius: var(--radius-lg);
+      background: var(--bg-base);
       overflow: hidden;
       cursor: pointer;
-      transition: border-color var(--transition-smooth), transform var(--transition-smooth), background var(--transition-smooth);
+      transition: all var(--duration-normal) var(--ease-spring);
     }
 
     .drop-zone:hover,
-    .drop-zone.has-file {
-      border-color: var(--secondary);
-      background: rgba(6, 182, 212, 0.07);
+    .drop-zone.drag-active {
+      border-color: var(--accent);
+      background: var(--accent-subtle);
       transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.1);
     }
 
-    .drop-zone input {
+    .drop-zone.has-file {
+      border-style: solid;
+      border-color: var(--accent);
+    }
+
+    .drop-zone input[type="file"] {
       position: absolute;
       inset: 0;
       opacity: 0;
@@ -191,46 +136,77 @@
       z-index: 2;
     }
 
-    .drop-content,
-    .preview {
+    .drop-content {
       position: absolute;
       inset: 0;
-    }
-
-    .drop-content {
-      display: grid;
-      place-items: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       text-align: center;
       padding: 24px;
+      gap: 4px;
     }
 
-    .drop-icon {
-      width: 58px;
-      height: 58px;
-      margin: 0 auto 14px;
-      border-radius: 16px;
+    .drop-step {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
       display: grid;
       place-items: center;
-      background: rgba(255, 255, 255, 0.08);
-      font-size: 1.8rem;
+      font-family: var(--font-secondary);
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--text-tertiary);
+      margin-bottom: 14px;
+      transition: all var(--duration-normal) ease;
     }
 
-    .drop-content strong {
+    .drop-zone:hover .drop-step {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-subtle);
+    }
+
+    .drop-title {
       display: block;
       color: var(--text-primary);
-      margin-bottom: 6px;
-    }
-
-    .drop-content span {
-      color: var(--text-tertiary);
+      font-weight: 600;
       font-size: 0.9rem;
+      margin-bottom: 4px;
     }
 
-    .preview {
+    .drop-desc {
+      color: var(--text-tertiary);
+      font-size: 0.8rem;
+      line-height: 1.5;
+      max-width: 180px;
+    }
+
+    .drop-hint {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 16px;
+      color: var(--text-tertiary);
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .drop-hint-icon {
+      font-size: 0.85rem;
+    }
+
+    /* ── Preview ── */
+    .preview-wrap {
+      position: absolute;
+      inset: 0;
       display: none;
     }
 
-    .preview img {
+    .preview-wrap img {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -238,209 +214,384 @@
 
     .preview-label {
       position: absolute;
-      left: 12px;
-      bottom: 12px;
-      max-width: calc(100% - 24px);
-      padding: 7px 10px;
-      border-radius: 9px;
-      background: rgba(2, 6, 23, 0.74);
-      color: white;
-      font-size: 0.82rem;
-      font-weight: 700;
+      left: 10px;
+      bottom: 10px;
+      max-width: calc(100% - 20px);
+      padding: 5px 10px;
+      background: rgba(17, 17, 19, 0.85);
+      backdrop-filter: blur(8px);
+      color: var(--text-primary);
+      font-size: 0.72rem;
+      font-weight: 500;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+    }
+
+    .preview-size {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      padding: 4px 8px;
+      background: rgba(17, 17, 19, 0.85);
+      backdrop-filter: blur(8px);
+      color: var(--accent-hover);
+      font-size: 0.7rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-light);
+      font-family: var(--font-secondary);
     }
 
     .drop-zone.has-file .drop-content {
       display: none;
     }
 
-    .drop-zone.has-file .preview {
+    .drop-zone.has-file .preview-wrap {
       display: block;
+      animation: fadeIn 0.4s var(--ease-out-expo) both;
     }
 
+    /* ── Form Footer ── */
     .form-footer {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin-top: 18px;
+      margin-top: var(--space-lg);
+      padding-top: var(--space-md);
+      border-top: 1px solid var(--border-light);
     }
 
     .form-note {
       color: var(--text-tertiary);
-      font-size: 0.86rem;
+      font-size: 0.8rem;
     }
 
     .analyze-btn {
-      min-width: 230px;
+      min-width: 180px;
+      padding: 12px 28px !important;
+      font-size: 0.9rem !important;
+    }
+
+    /* ── Loading Overlay (Panel-scoped) ── */
+    .upload-panel .loading-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 20;
+      display: none;
+      flex-direction: column;
+      align-items: center;
       justify-content: center;
+      gap: 28px;
+      background: var(--bg-overlay);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: var(--radius-lg);
+      pointer-events: all;
+      opacity: 1;
     }
 
-    @media (max-width: 980px) {
-      .workspace {
-        grid-template-columns: 1fr;
-      }
-
-      .overview {
-        padding-top: 0;
-      }
+    .upload-panel .loading-overlay.active {
+      display: flex;
+      animation: fadeIn 0.3s var(--ease-out-expo) both;
     }
 
-    @media (max-width: 680px) {
-      .app-shell {
-        padding: 22px 14px 36px;
+    .loading-spinner-ring {
+      width: 44px;
+      height: 44px;
+      border: 2px solid var(--border-light);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .loading-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .loading-step {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-tertiary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: all 0.5s var(--ease-out-expo);
+    }
+
+    .loading-step.visible {
+      opacity: 1;
+      transform: translateY(0);
+      color: var(--text-secondary);
+    }
+
+    .loading-step.visible .step-check {
+      background: var(--success);
+      color: white;
+      border-color: transparent;
+    }
+
+    .step-check {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-light);
+      background: var(--bg-base);
+      display: grid;
+      place-items: center;
+      font-size: 0.6rem;
+      transition: all 0.4s var(--ease-spring);
+      color: transparent;
+    }
+
+    .loading-pulse-text {
+      color: var(--text-tertiary);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      animation: pulseFade 1.8s ease-in-out infinite;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2rem;
       }
 
-      .topbar {
-        align-items: flex-start;
-        flex-direction: column;
-        margin-bottom: 28px;
-      }
-
-      .signal-grid,
       .upload-grid {
         grid-template-columns: 1fr;
       }
 
-      .panel-title,
       .form-footer {
-        align-items: stretch;
         flex-direction: column;
-      }
-
-      .drop-zone {
-        min-height: 250px;
+        align-items: stretch;
       }
 
       .analyze-btn {
         width: 100%;
       }
     }
+
+    @media (max-width: 480px) {
+      .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
   </style>
 </head>
 <body>
-  <main class="app-shell">
+
+  <main class="page">
+    <!-- ── Topbar ── -->
     <nav class="topbar" aria-label="BuildWatch AI navigation">
-      <div class="brand">
+      <a href="/" class="brand" style="text-decoration: none;">
         <span class="brand-mark" aria-hidden="true">BW</span>
         <span>BuildWatch AI</span>
+      </a>
+      <div class="topbar-nav">
+        <a href="/" class="topbar-link active">Analyze</a>
+        <a href="/history" class="topbar-link">History</a>
       </div>
-      <div class="topbar-meta">Construction change intelligence from before/after imagery</div>
     </nav>
 
-    <section class="workspace">
-      <div class="overview">
-        <div class="eyebrow">Live computer vision workflow</div>
-        <h1>Spot construction changes before they become surprises.</h1>
-        <p class="overview-copy">
-          Upload historical and current satellite or drone imagery. BuildWatch AI compares the scene, highlights altered zones, detects objects with YOLO, and returns a practical risk assessment.
-        </p>
+    <!-- ── Hero ── -->
+    <section class="hero animate-in">
+      <h1>AI-powered site change detection<span class="accent-dot">.</span></h1>
+      <p>Upload before &amp; after imagery to detect construction changes, assess risk levels, and generate detailed visual reports.</p>
+    </section>
 
-        <div class="signal-grid" aria-label="Capabilities">
-          <div class="signal">
-            <strong>Change Detection</strong>
-            <span>Difference masks, contours, and annotated output images.</span>
-          </div>
-          <div class="signal">
-            <strong>Risk Assessment</strong>
-            <span>Scene-change percentage translated into action levels.</span>
-          </div>
-          <div class="signal">
-            <strong>YOLO Context</strong>
-            <span>Object detections add extra evidence to the report.</span>
-          </div>
-          <div class="signal">
-            <strong>API Ready</strong>
-            <span>Use the JSON endpoint for integrations and automation.</span>
-          </div>
-        </div>
+    <!-- ── Upload Form ── -->
+    <form id="uploadForm" class="upload-panel panel animate-in stagger-2" action="/upload" method="post" enctype="multipart/form-data">
+
+      <!-- Panel Header -->
+      <div class="panel-header">
+        <h2>Analyze a site</h2>
+        <p>Use matching views for best results. JPG, JPEG &amp; PNG supported.</p>
       </div>
 
-      <form id="uploadForm" class="upload-panel" action="/upload" method="post" enctype="multipart/form-data">
-        <div class="panel-title">
-          <div>
-            <h2>Analyze a Site</h2>
-            <p>Use matching views for best results. JPG, JPEG, and PNG are supported.</p>
+      <!-- Error Banner -->
+      {% if request.args.get('error') %}
+      <div class="error-banner" role="alert">
+        <span class="error-banner-icon" aria-hidden="true">✕</span>
+        {{ request.args.get('error') }}
+      </div>
+      {% endif %}
+
+      <!-- Drop Zones -->
+      <div class="upload-grid">
+        <!-- Before Image -->
+        <label class="drop-zone" id="beforeZone">
+          <input type="file" id="beforeFile" name="before" accept="image/png,image/jpeg" required>
+          <span class="drop-content">
+            <span class="drop-step" aria-hidden="true">01</span>
+            <span class="drop-title">Historical image</span>
+            <span class="drop-desc">Before construction or previous inspection</span>
+            <span class="drop-hint">
+              <span class="drop-hint-icon" aria-hidden="true">📁</span>
+              Click or drag to upload
+            </span>
+          </span>
+          <span class="preview-wrap" id="beforePreview"></span>
+        </label>
+
+        <!-- After Image -->
+        <label class="drop-zone" id="afterZone">
+          <input type="file" id="afterFile" name="after" accept="image/png,image/jpeg" required>
+          <span class="drop-content">
+            <span class="drop-step" aria-hidden="true">02</span>
+            <span class="drop-title">Current image</span>
+            <span class="drop-desc">Latest satellite, drone, or site capture</span>
+            <span class="drop-hint">
+              <span class="drop-hint-icon" aria-hidden="true">📁</span>
+              Click or drag to upload
+            </span>
+          </span>
+          <span class="preview-wrap" id="afterPreview"></span>
+        </label>
+      </div>
+
+      <!-- Footer -->
+      <div class="form-footer">
+        <p class="form-note">Max 50 MB per file · Processing takes a few seconds</p>
+        <button class="btn btn-primary analyze-btn" type="submit" id="analyzeBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Analyze changes
+        </button>
+      </div>
+
+      <!-- Loading Overlay -->
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner-ring"></div>
+        <div class="loading-steps">
+          <div class="loading-step" id="step1">
+            <span class="step-check">✓</span>
+            <span>Uploading images…</span>
           </div>
-          <span class="status-pill">AI engine ready</span>
+          <div class="loading-step" id="step2">
+            <span class="step-check">✓</span>
+            <span>Running change detection…</span>
+          </div>
+          <div class="loading-step" id="step3">
+            <span class="step-check">✓</span>
+            <span>AI analysis in progress…</span>
+          </div>
         </div>
+        <span class="loading-pulse-text">Processing</span>
+      </div>
+    </form>
 
-        {% if error %}
-        <div class="error-banner" role="alert">{{ error }}</div>
-        {% endif %}
-
-        <div class="upload-grid">
-          <label class="drop-zone" id="beforeZone">
-            <input type="file" id="beforeFile" name="before" accept="image/png,image/jpeg" required>
-            <span class="drop-content">
-              <span>
-                <span class="drop-icon" aria-hidden="true">01</span>
-                <strong>Historical Image</strong>
-                <span>Before construction or previous inspection</span>
-              </span>
-            </span>
-            <span class="preview" id="beforePreview"></span>
-          </label>
-
-          <label class="drop-zone" id="afterZone">
-            <input type="file" id="afterFile" name="after" accept="image/png,image/jpeg" required>
-            <span class="drop-content">
-              <span>
-                <span class="drop-icon" aria-hidden="true">02</span>
-                <strong>Current Image</strong>
-                <span>Latest satellite, drone, or site capture</span>
-              </span>
-            </span>
-            <span class="preview" id="afterPreview"></span>
-          </label>
-        </div>
-
-        <div class="form-footer">
-          <p class="form-note">Maximum upload size: 50 MB. Processing can take a few seconds.</p>
-          <button class="btn btn-primary analyze-btn" type="submit" id="analyzeBtn">Analyze Changes</button>
-        </div>
-      </form>
-    </section>
+    <!-- ── Footer ── -->
+    <footer class="site-footer">
+      <p>BuildWatch AI · Intelligent construction monitoring</p>
+    </footer>
   </main>
 
   <script>
-    const uploadForm = document.getElementById('uploadForm');
-    const analyzeBtn = document.getElementById('analyzeBtn');
+    /* ── File Preview ── */
+    function formatFileSize(bytes) {
+      if (bytes < 1024) return bytes + ' B';
+      if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+      return (bytes / 1048576).toFixed(1) + ' MB';
+    }
 
     function wirePreview(inputId, zoneId, previewId) {
       const input = document.getElementById(inputId);
-      const zone = document.getElementById(zoneId);
-      const preview = document.getElementById(previewId);
+      const zone  = document.getElementById(zoneId);
+      const pWrap = document.getElementById(previewId);
 
       input.addEventListener('change', () => {
         const file = input.files[0];
         if (!file) {
           zone.classList.remove('has-file');
-          preview.replaceChildren();
+          pWrap.replaceChildren();
           return;
         }
 
-        const imageUrl = URL.createObjectURL(file);
-        const image = document.createElement('img');
+        const url   = URL.createObjectURL(file);
+        const img   = document.createElement('img');
         const label = document.createElement('span');
-        image.src = imageUrl;
-        image.alt = '';
-        label.className = 'preview-label';
+        const size  = document.createElement('span');
+
+        img.src = url;
+        img.alt = 'Selected image preview';
+
+        label.className   = 'preview-label';
         label.textContent = file.name;
-        preview.replaceChildren(image, label);
+
+        size.className   = 'preview-size';
+        size.textContent = formatFileSize(file.size);
+
+        pWrap.replaceChildren(img, label, size);
         zone.classList.add('has-file');
       });
     }
 
     wirePreview('beforeFile', 'beforeZone', 'beforePreview');
-    wirePreview('afterFile', 'afterZone', 'afterPreview');
+    wirePreview('afterFile',  'afterZone',  'afterPreview');
 
-    uploadForm.addEventListener('submit', () => {
+    /* ── Loading Overlay ── */
+    const uploadForm = document.getElementById('uploadForm');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const overlay    = document.getElementById('loadingOverlay');
+
+    /* ── Form Validation & Loading ── */
+    uploadForm.addEventListener('submit', (e) => {
+      const before = document.getElementById('beforeFile').files.length;
+      const after = document.getElementById('afterFile').files.length;
+      
+      if (!before || !after) {
+        e.preventDefault();
+        return;
+      }
+
       analyzeBtn.disabled = true;
-      analyzeBtn.textContent = 'Analyzing...';
+      overlay.classList.add('active');
+
+      const steps = [
+        document.getElementById('step1'),
+        document.getElementById('step2'),
+        document.getElementById('step3')
+      ];
+
+      steps.forEach((step, i) => {
+        setTimeout(() => step.classList.add('visible'), 400 + i * 1200);
+      });
     });
+
+    /* ── Drag and Drop Styling ── */
+    function setupDragAndDrop(zoneId) {
+      const zone = document.getElementById(zoneId);
+      zone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        zone.classList.add('drag-active');
+      });
+      zone.addEventListener('dragleave', () => {
+        zone.classList.remove('drag-active');
+      });
+      zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        zone.classList.remove('drag-active');
+        const input = zone.querySelector('input[type="file"]');
+        if (e.dataTransfer.files.length) {
+          input.files = e.dataTransfer.files;
+          const event = new Event('change');
+          input.dispatchEvent(event);
+        }
+      });
+    }
+    
+    setupDragAndDrop('beforeZone');
+    setupDragAndDrop('afterZone');
+
   </script>
 </body>
 </html>

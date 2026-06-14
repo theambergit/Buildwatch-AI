@@ -3,154 +3,289 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BuildWatch AI - Analysis Results</title>
+  <meta name="description" content="BuildWatch AI construction site analysis results — scene change detection, risk assessment, and visual comparison report.">
+  <title>BuildWatch AI — Analysis Results</title>
   <link rel="stylesheet" href="/static/style.css">
   <style>
     .page {
+      position: relative;
+      z-index: 1;
       min-height: 100vh;
-      padding: 30px 20px 48px;
+      padding: 0;
     }
 
+    /* ── Header ── */
     .report-header {
-      max-width: 1180px;
-      margin: 0 auto 26px;
       display: flex;
       justify-content: space-between;
-      gap: 20px;
+      gap: 32px;
       align-items: flex-start;
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-light);
     }
 
     .report-header h1 {
-      font-size: clamp(2rem, 5vw, 3.8rem);
-      line-height: 1;
+      font-size: 3rem;
+      line-height: 1.05;
       margin-bottom: 12px;
     }
 
     .report-header p {
       max-width: 760px;
       color: var(--text-secondary);
-      font-size: 1.04rem;
+      font-size: 1rem;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 12px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all var(--duration-normal) var(--ease-out-expo);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .back-link:hover {
+      border-color: var(--border-strong);
+      color: var(--text-primary);
+      transform: translateX(-2px);
     }
 
     .report-meta {
-      min-width: 210px;
+      min-width: 260px;
       border: 1px solid var(--border-light);
-      border-radius: 12px;
-      padding: 14px;
-      background: rgba(255, 255, 255, 0.045);
-      color: var(--text-tertiary);
-      font-size: 0.88rem;
+      border-radius: var(--radius-md);
+      padding: 20px;
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .report-meta strong {
-      display: block;
       color: var(--text-primary);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 8px;
       margin-bottom: 4px;
+      font-size: 0.8rem;
     }
 
+    .report-meta .meta-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .report-meta .meta-icon {
+      width: 16px;
+      height: 16px;
+      opacity: 0.5;
+      color: var(--text-secondary);
+    }
+
+    /* ── Metrics ── */
     .metrics {
-      max-width: 1180px;
-      margin: 0 auto 24px;
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 40px;
     }
 
     .metric {
       border: 1px solid var(--border-light);
-      border-radius: 14px;
-      padding: 18px;
-      background: rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      background: var(--bg-surface);
+      transition: all var(--duration-normal) var(--ease-out-expo);
+      position: relative;
     }
 
-    .metric span {
+    .metric:hover {
+      border-color: var(--border-strong);
+    }
+
+    .metric-label {
       display: block;
       color: var(--text-tertiary);
-      font-size: 0.86rem;
-      margin-bottom: 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
     }
 
-    .metric strong {
+    .metric-value {
       display: block;
       color: var(--text-primary);
-      font-size: 1.8rem;
-      line-height: 1.1;
+      font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+      font-size: 2.6rem;
+      line-height: 1;
     }
 
-    .risk-pill {
+    .metric-value .unit {
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      margin-left: 2px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Risk Badge */
+    .risk-badge {
       display: inline-flex;
       align-items: center;
-      min-height: 36px;
-      padding: 8px 13px;
-      border-radius: 999px;
-      font-weight: 800;
-      font-size: 1rem;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
+    .risk-high { background: var(--danger); color: var(--danger-text); }
+    .risk-medium { background: var(--warning); color: var(--warning-text); }
+    .risk-low { background: var(--success); color: var(--success-text); }
 
-    .risk-high {
-      background: rgba(239, 68, 68, 0.16);
-      color: #fca5a5;
-      border: 1px solid rgba(239, 68, 68, 0.35);
-    }
-
-    .risk-medium {
-      background: rgba(245, 158, 11, 0.16);
-      color: #fcd34d;
-      border: 1px solid rgba(245, 158, 11, 0.35);
-    }
-
-    .risk-low {
-      background: rgba(34, 197, 94, 0.16);
-      color: #86efac;
-      border: 1px solid rgba(34, 197, 94, 0.35);
-    }
-
+    /* ── Grid ── */
     .report-grid {
-      max-width: 1180px;
-      margin: 0 auto;
       display: grid;
-      grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
-      gap: 22px;
+      grid-template-columns: minmax(0, 1.25fr) minmax(360px, 0.75fr);
+      gap: 32px;
       align-items: start;
     }
 
-    .comparison-card,
-    .insight-card,
-    .image-card {
+    .comparison-card, .insight-card {
+      background: var(--bg-surface);
       border: 1px solid var(--border-light);
-      border-radius: 14px;
-      background: rgba(15, 23, 42, 0.72);
+      border-radius: var(--radius-md);
       overflow: hidden;
-      box-shadow: 0 20px 60px rgba(2, 6, 23, 0.28);
     }
 
     .card-head {
-      padding: 16px 18px;
+      padding: 20px 24px;
       border-bottom: 1px solid var(--border-light);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 14px;
+      gap: 16px;
+      background: var(--bg-surface);
     }
 
-    .card-head h2,
-    .card-head h3 {
-      font-size: 1rem;
+    .card-head h2, .card-head h3 {
+      font-size: 1.1rem;
       margin: 0;
+      color: var(--text-primary);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .card-head .hint {
+      color: var(--text-tertiary);
+      font-size: 0.8rem;
+      font-family: 'Inter', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Multi-Mode Viewport ── */
+    .visual-viewport {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      background: var(--bg-base);
+      overflow: hidden;
+    }
+
+    .visual-mode-content {
+      display: none;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      inset: 0;
+    }
+
+    .visual-mode-content.active {
+      display: block;
+    }
+
+    .single-view {
+      position: relative;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .single-view.active {
+      display: flex;
+    }
+
+    .interactive-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Modes Switcher */
+    .view-modes {
+      display: flex;
+      gap: 4px;
+      background: var(--bg-base);
+      padding: 2px;
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-md);
+      flex-wrap: wrap;
+    }
+
+    .mode-btn {
+      background: transparent;
+      border: 1px solid transparent;
+      padding: 6px 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      cursor: pointer;
+      border-radius: var(--radius-sm);
+      transition: all var(--duration-normal) ease;
+    }
+
+    .mode-btn:hover {
       color: var(--text-primary);
     }
 
-    .card-head span {
-      color: var(--text-tertiary);
-      font-size: 0.82rem;
+    .mode-btn.active {
+      background: var(--bg-surface-hover);
+      color: var(--accent);
+      border-color: var(--border-light);
     }
 
+    /* ── Split Slider ── */
     .comparison {
       position: relative;
-      aspect-ratio: 16 / 10;
       user-select: none;
-      overflow: hidden;
-      background: #020617;
+      cursor: ew-resize;
     }
 
     .comparison img {
@@ -158,6 +293,7 @@
       height: 100%;
       object-fit: cover;
       display: block;
+      pointer-events: none;
     }
 
     .after-layer {
@@ -170,6 +306,8 @@
     .after-layer img {
       width: 100%;
       max-width: none;
+      height: 100%;
+      object-fit: cover;
     }
 
     .slider-line {
@@ -177,8 +315,8 @@
       top: 0;
       bottom: 0;
       left: 50%;
-      width: 3px;
-      background: var(--secondary);
+      width: 1px;
+      background: var(--border-strong);
       transform: translateX(-50%);
       z-index: 3;
     }
@@ -187,300 +325,863 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 46px;
-      height: 46px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.35);
-      background: var(--gradient-primary);
-      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-surface);
+      color: var(--text-primary);
       display: grid;
       place-items: center;
       transform: translate(-50%, -50%);
       cursor: ew-resize;
       z-index: 4;
-      font-weight: 900;
-      box-shadow: 0 10px 24px rgba(6, 182, 212, 0.28);
+      font-size: 0.85rem;
+      font-family: 'Inter', sans-serif;
+      transition: border-color var(--duration-normal) ease, background var(--duration-normal) ease;
+    }
+
+    .slider-knob:hover {
+      border-color: var(--accent);
+      background: var(--bg-surface-hover);
     }
 
     .compare-label {
       position: absolute;
-      top: 14px;
+      top: 16px;
       z-index: 5;
-      padding: 7px 10px;
-      border-radius: 8px;
-      background: rgba(2, 6, 23, 0.72);
-      color: white;
-      font-size: 0.82rem;
-      font-weight: 800;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      color: var(--text-primary);
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      pointer-events: none;
+      transition: opacity var(--duration-normal) ease;
     }
 
-    .compare-label.before {
-      left: 14px;
+    .compare-label.before { left: 16px; }
+    .compare-label.after  { right: 16px; }
+
+    /* ── SVG Annotation Overlay ── */
+    .svg-overlay {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      display: none;
+      z-index: 10;
     }
 
-    .compare-label.after {
-      right: 14px;
+    .svg-overlay.active {
+      display: block;
     }
 
-    .insight-card {
-      padding-bottom: 18px;
+    .yolo-box-group {
+      pointer-events: all;
+      cursor: crosshair;
     }
 
+    .yolo-box-group rect {
+      stroke: rgba(212, 175, 55, 0.45);
+      stroke-width: 2;
+      fill: transparent;
+      transition: all var(--duration-fast) ease;
+    }
+
+    .yolo-box-group:hover rect,
+    .yolo-box-group.highlighted rect {
+      stroke: var(--accent);
+      stroke-width: 3;
+      fill: rgba(212, 175, 55, 0.06);
+    }
+
+    .yolo-box-group text {
+      font-size: 11px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      opacity: 0;
+      transition: opacity var(--duration-fast) ease;
+      paint-order: stroke;
+      stroke: var(--bg-base);
+      stroke-width: 3px;
+      stroke-linejoin: round;
+      fill: var(--accent);
+    }
+
+    .yolo-box-group:hover text,
+    .yolo-box-group.highlighted text {
+      opacity: 1;
+    }
+
+    /* ── Assessment ── */
     .insight-body {
-      padding: 18px;
+      padding: 24px;
     }
 
-    .insight-body p {
-      margin-bottom: 14px;
+    .insight-body > p {
+      margin-bottom: 20px;
       color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.6;
     }
 
     .finding {
-      padding: 14px;
-      border-radius: 12px;
-      border-left: 3px solid var(--secondary);
-      background: rgba(6, 182, 212, 0.1);
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      border-left: 2px solid var(--accent);
+      background: var(--bg-surface-hover);
       color: var(--text-primary);
-      line-height: 1.7;
+      line-height: 1.6;
+      font-size: 0.9rem;
+      margin-bottom: 20px;
     }
 
+    .note {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      background: rgba(120, 53, 15, 0.08);
+      border: 1px solid var(--warning);
+      color: var(--warning-text);
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 24px;
+    }
+
+    .note svg { flex-shrink: 0; }
+
+    /* Pipeline */
     .pipeline {
       display: grid;
-      gap: 10px;
+      gap: 12px;
       margin-top: 16px;
+      border-top: 1px solid var(--border-light);
+      padding-top: 20px;
     }
 
-    .pipeline div {
+    .pipeline-step {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       align-items: center;
       color: var(--text-secondary);
-      font-size: 0.92rem;
+      font-size: 0.85rem;
     }
 
-    .pipeline b {
-      width: 26px;
-      height: 26px;
-      border-radius: 8px;
+    .step-num {
+      width: 24px;
+      height: 24px;
+      border-radius: var(--radius-sm);
       display: grid;
       place-items: center;
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--secondary);
-    }
-
-    .image-grid {
-      max-width: 1180px;
-      margin: 22px auto 0;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .image-card img {
-      width: 100%;
-      aspect-ratio: 4 / 3;
-      object-fit: cover;
-      display: block;
-      background: #020617;
-    }
-
-    .image-card p {
-      padding: 12px 14px 15px;
+      background: var(--bg-base);
+      border: 1px solid var(--border-light);
       color: var(--text-tertiary);
-      font-size: 0.88rem;
+      font-weight: 500;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+      position: relative;
     }
 
+    .step-num.done {
+      background: var(--success);
+      border-color: transparent;
+      color: var(--success-text);
+    }
+
+    .step-num .check {
+      display: none;
+    }
+
+    .step-num.done .check {
+      display: block;
+    }
+
+    .step-num.done .num-text {
+      display: none;
+    }
+
+    /* Object Detection Table */
+    .yolo-table-row {
+      transition: background-color var(--duration-fast) ease;
+      cursor: pointer;
+    }
+
+    .yolo-table-row:hover,
+    .yolo-table-row.highlighted-row {
+      background-color: var(--bg-surface-hover);
+      color: var(--text-primary);
+    }
+
+    /* ── Action Rows ── */
     .actions {
-      max-width: 1180px;
-      margin: 24px auto 0;
       display: flex;
       gap: 12px;
       justify-content: flex-end;
       flex-wrap: wrap;
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-light);
     }
 
-    @media print {
-      .actions {
-        display: none;
-      }
-
-      body {
-        background: #fff;
-        color: #111827;
-      }
+    .actions .btn svg {
+      width: 16px;
+      height: 16px;
     }
 
-    @media (max-width: 960px) {
-      .report-header,
+    /* ── Lightbox ── */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-overlay);
+      backdrop-filter: blur(8px);
+    }
+
+    .lightbox.active {
+      display: flex;
+    }
+
+    .lightbox-content {
+      max-width: 90vw;
+      max-height: 85vh;
+      position: relative;
+    }
+
+    .lightbox-content img {
+      max-width: 100%;
+      max-height: 80vh;
+      border: 1px solid var(--border-light);
+      display: block;
+    }
+
+    .lightbox-title {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-top: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .lightbox-close {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-light);
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      color: var(--text-primary);
+      font-size: 1.1rem;
+      cursor: pointer;
+      z-index: 1001;
+      border-radius: var(--radius-sm);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 980px) {
+      .report-header {
+        flex-direction: column;
+        gap: 24px;
+      }
+      .report-meta {
+        width: 100%;
+      }
+      .metrics {
+        grid-template-columns: repeat(2, 1fr);
+      }
       .report-grid {
         grid-template-columns: 1fr;
-        display: grid;
-      }
-
-      .metrics {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-
-      .image-grid {
-        grid-template-columns: 1fr;
       }
     }
 
-    @media (max-width: 560px) {
-      .page {
-        padding: 22px 14px 36px;
-      }
-
+    @media (max-width: 580px) {
       .metrics {
         grid-template-columns: 1fr;
       }
-
+      .actions {
+        flex-direction: column;
+      }
       .actions .btn {
         width: 100%;
         justify-content: center;
+      }
+      .card-head {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      .view-modes {
+        width: 100%;
+      }
+      .mode-btn {
+        flex: 1;
+        text-align: center;
+      }
+    }
+
+    /* ── Print Optimization ── */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+      .topbar, .actions, .nav-actions, .view-modes, .slider-knob, .slider-line, .compare-label, .lightbox {
+        display: none !important;
+      }
+      .page {
+        max-width: 100% !important;
+        padding: 0 !important;
+      }
+      .report-header {
+        border-bottom: 2px solid #000000;
+        margin-bottom: 20px;
+      }
+      .metric, .comparison-card, .insight-card {
+        background: #ffffff !important;
+        border: 1px solid #000000 !important;
+        color: #000000 !important;
+        page-break-inside: avoid;
+        margin-bottom: 15px;
+      }
+      .metric-label {
+        color: #555555 !important;
+      }
+      .metric-value {
+        color: #000000 !important;
+      }
+      .finding {
+        background: #f5f5f5 !important;
+        border-left: 3px solid #000000 !important;
+        color: #000000 !important;
+      }
+      .note {
+        border: 1px solid #000000 !important;
+        color: #000000 !important;
+        background: transparent !important;
+      }
+      .data-table th {
+        border-bottom: 2px solid #000000 !important;
+        color: #000000 !important;
+      }
+      .data-table td {
+        border-bottom: 1px solid #dddddd !important;
+        color: #000000 !important;
       }
     }
   </style>
 </head>
 <body>
   <main class="page">
-    <header class="report-header">
+    <nav class="topbar">
+      <a href="/" class="brand">
+        <span class="brand-mark" aria-hidden="true">BW</span>
+        <span>BuildWatch AI</span>
+      </a>
+      <div class="topbar-nav">
+        <a href="/" class="topbar-link">Analyze</a>
+        <a href="/history" class="topbar-link">History</a>
+      </div>
+    </nav>
+
+    <!-- ===== HEADER ===== -->
+    <header class="report-header animate-in">
       <div>
-        <h1>Analysis Complete</h1>
+        <h1>Analysis Completed</h1>
         <p>{{ summary }}</p>
+        <div class="nav-actions">
+          <a href="/" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><polyline points="12 19 5 12 12 5"/></svg>
+            New Analysis
+          </a>
+          <a href="/history" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            View History
+          </a>
+        </div>
       </div>
       <div class="report-meta">
-        <strong>Report generated</strong>
-        {{ timestamp }}<br>
-        {{ image_dimensions }} px
+        <strong>Metadata Index</strong>
+        <div class="meta-row">
+          <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>{{ timestamp }}</span>
+        </div>
+        <div class="meta-row">
+          <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/></svg>
+          <span>{{ image_dimensions }} px</span>
+        </div>
+        <div class="meta-row">
+          <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/></svg>
+          <span>{{ "{:,}".format(total_pixels) }} total pixels</span>
+        </div>
       </div>
     </header>
 
+    <!-- ===== METRICS ROW ===== -->
     <section class="metrics" aria-label="Analysis metrics">
-      <div class="metric">
-        <span>Scene Change</span>
-        <strong>{{ confidence }}%</strong>
+      <div class="metric animate-in stagger-1">
+        <span class="metric-label">Scene Change</span>
+        <span class="metric-value">
+          <span class="count-up" data-target="{{ confidence }}" data-decimals="2">0</span><span class="unit">%</span>
+        </span>
       </div>
-      <div class="metric">
-        <span>Changed Regions</span>
-        <strong>{{ regions }}</strong>
+      <div class="metric animate-in stagger-2">
+        <span class="metric-label">Changed Regions</span>
+        <span class="metric-value">
+          <span class="count-up" data-target="{{ regions }}" data-decimals="0">0</span>
+        </span>
       </div>
-      <div class="metric">
-        <span>YOLO Objects</span>
-        <strong>{{ yolo_detections }}</strong>
+      <div class="metric animate-in stagger-3">
+        <span class="metric-label">YOLO Detections</span>
+        <span class="metric-value">
+          <span class="count-up" data-target="{{ yolo_detections }}" data-decimals="0">0</span>
+        </span>
       </div>
-      <div class="metric">
-        <span>Risk Level</span>
-        <strong><span class="risk-pill risk-{{ risk.lower() }}">{{ risk }}</span></strong>
+      <div class="metric animate-in stagger-4">
+        <span class="metric-label">Risk Level</span>
+        <span class="metric-value">
+          <span class="risk-badge risk-{{ risk|lower }}">{{ risk }}</span>
+        </span>
       </div>
     </section>
 
+    <!-- ===== MAIN CONTENT GRID ===== -->
     <section class="report-grid">
-      <article class="comparison-card">
-        <div class="card-head">
-          <h2>Before / After Comparison</h2>
-          <span>Drag the handle</span>
-        </div>
-        <div class="comparison" id="comparison">
-          <img src="{{ images.before }}" alt="Historical site image">
-          <div class="after-layer" id="afterLayer">
-            <img src="{{ images.after }}" alt="Current site image" id="afterCompareImage">
-          </div>
-          <div class="slider-line" id="sliderLine"></div>
-          <button class="slider-knob" id="sliderKnob" type="button" aria-label="Move comparison slider">↔</button>
-          <span class="compare-label before">Before</span>
-          <span class="compare-label after">After</span>
-        </div>
-      </article>
 
-      <aside class="insight-card">
+      <!-- Interactive Viewport -->
+      <article class="comparison-card card animate-in stagger-5">
         <div class="card-head">
-          <h3>AI Assessment</h3>
-          <span>{{ changed_pixels }} changed pixels</span>
-        </div>
-        <div class="insight-body">
-          <p>The analysis uses grayscale normalization, blur-based noise reduction, binary thresholding, contour filtering, and YOLO object detection on the current frame.</p>
-          <div class="finding">{{ summary }} Manual verification is recommended before compliance or enforcement action.</div>
-
-          <div class="pipeline" aria-label="Processing pipeline">
-            <div><b>1</b> Validate and align image dimensions</div>
-            <div><b>2</b> Detect pixel-level scene differences</div>
-            <div><b>3</b> Filter noise and extract changed regions</div>
-            <div><b>4</b> Run object detection for context</div>
-            <div><b>5</b> Generate risk score and visuals</div>
+          <h2>Site Visualization</h2>
+          <div class="view-modes" role="tablist">
+            <button class="mode-btn active" data-mode="slider" role="tab" aria-selected="true">Split Slider</button>
+            <button class="mode-btn" data-mode="result" role="tab" aria-selected="false">Annotated</button>
+            <button class="mode-btn" data-mode="mask" role="tab" aria-selected="false">Mask</button>
+            <button class="mode-btn" data-mode="heatmap" role="tab" aria-selected="false">Heatmap</button>
+            <button class="mode-btn" data-mode="before" role="tab" aria-selected="false">Raw Before</button>
+            <button class="mode-btn" data-mode="after" role="tab" aria-selected="false">Raw After</button>
           </div>
         </div>
-      </aside>
+        
+        <div class="visual-viewport">
+          <!-- Split Slider View -->
+          <div class="comparison visual-mode-content active" id="comparisonMode">
+            <img src="{{ images.before }}" alt="Historical site image (before)">
+            <div class="after-layer" id="afterLayer">
+              <img src="{{ images.after }}" alt="Current site image (after)" id="afterCompareImage">
+            </div>
+            <div class="slider-line" id="sliderLine"></div>
+            <button class="slider-knob" id="sliderKnob" type="button" aria-label="Move comparison slider">↔</button>
+            <span class="compare-label before" id="labelBefore">Before</span>
+            <span class="compare-label after" id="labelAfter">After</span>
+          </div>
+
+          <!-- Static Image Mode (Switchable) -->
+          <div class="single-view visual-mode-content" id="staticMode">
+            <img src="" id="staticImage" alt="Visualization screen" class="interactive-img" onclick="zoomActiveImage()">
+            
+            <!-- SVG overlay for YOLO bounding boxes -->
+            <svg viewBox="0 0 {{ width }} {{ height }}" class="svg-overlay" id="svgOverlay">
+              {% for obj in yolo_objects %}
+              <g class="yolo-box-group" data-index="{{ loop.index0 }}">
+                <rect x="{{ obj.x1 }}" y="{{ obj.y1 }}" width="{{ obj.x2 - obj.x1 }}" height="{{ obj.y2 - obj.y1 }}"></rect>
+                <text x="{{ obj.x1 }}" y="{{ obj.y1 - 6 if obj.y1 - 6 > 20 else obj.y1 + 16 }}">{{ obj.label|upper }} ({{ (obj.confidence * 100)|round(0) }}%)</text>
+              </g>
+              {% endfor %}
+            </svg>
+          </div>
+        </div>
+      </article>
+
+      <!-- AI Assessment & Tables -->
+      <div style="display: flex; flex-direction: column; gap: 24px;">
+        <aside class="insight-card card animate-in stagger-6">
+          <div class="card-head">
+            <h3>AI Assessment</h3>
+            <span class="hint">{{ "{:,}".format(changed_pixels) }} changed pixels</span>
+          </div>
+          <div class="insight-body">
+            <p>Monitored via pixel delta thresholds, Gaussian denoising, morphological close-dilation, and bounding contour analysis, overlayed with YOLO contextual models.</p>
+            <div class="finding">{{ summary }}</div>
+            <div class="note">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Manual verification recommended before actioning details.
+            </div>
+            
+            <div class="pipeline" id="pipeline" aria-label="Processing pipeline">
+              <div class="pipeline-step">
+                <span class="step-num" id="pipe1"><span class="num-text">1</span><span class="check">✓</span></span>
+                Dimension alignment and scaling
+              </div>
+              <div class="pipeline-step">
+                <span class="step-num" id="pipe2"><span class="num-text">2</span><span class="check">✓</span></span>
+                Noise filtering and Gaussian smoothing
+              </div>
+              <div class="pipeline-step">
+                <span class="step-num" id="pipe3"><span class="num-text">3</span><span class="check">✓</span></span>
+                Pixel thresholding and contour extraction
+              </div>
+              <div class="pipeline-step">
+                <span class="step-num" id="pipe4"><span class="num-text">4</span><span class="check">✓</span></span>
+                YOLOv8 contextual object scan
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- YOLO Table -->
+        {% if yolo_objects %}
+        <div class="insight-card card animate-in stagger-7">
+          <div class="card-head">
+            <h3>Object Scan Index</h3>
+            <span class="hint">{{ yolo_objects|length }} items</span>
+          </div>
+          <div class="insight-body" style="padding: 0;">
+            <div style="max-height: 240px; overflow-y: auto;">
+              <table class="data-table">
+                <thead style="position: sticky; top: 0; background: var(--bg-surface); z-index: 2;">
+                  <tr>
+                    <th>Class Identifier</th>
+                    <th>Confidence Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for obj in yolo_objects %}
+                  <tr class="yolo-table-row" data-index="{{ loop.index0 }}">
+                    <td style="text-transform: capitalize; font-weight: 500; color: var(--text-primary);">{{ obj.label }}</td>
+                    <td>
+                      <span class="risk-badge" style="background: var(--bg-base); border: 1px solid var(--border-light); font-size: 0.75rem; color: var(--text-secondary); padding: 4px 8px;">
+                        {{ (obj.confidence * 100)|round(1) }}%
+                      </span>
+                    </td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
     </section>
 
-    <section class="image-grid" aria-label="Generated analysis images">
-      <article class="image-card">
-        <div class="card-head"><h3>Detected Changes</h3></div>
-        <img src="{{ images.result }}" alt="Annotated changed regions">
-        <p>Current image annotated with detected change regions and YOLO objects.</p>
-      </article>
-
-      <article class="image-card">
-        <div class="card-head"><h3>Difference Mask</h3></div>
-        <img src="{{ images.mask }}" alt="Binary difference mask">
-        <p>White areas show the pixels that changed beyond the configured threshold.</p>
-      </article>
-
-      <article class="image-card">
-        <div class="card-head"><h3>Change Heatmap</h3></div>
-        <img src="{{ images.heatmap }}" alt="Change intensity heatmap">
-        <p>Heatmap view for quickly scanning intensity across the monitored scene.</p>
-      </article>
-    </section>
-
-    <div class="actions">
-      <a class="btn btn-secondary" href="{{ images.result }}" download>Download Result Image</a>
-      <button class="btn btn-secondary" type="button" onclick="window.print()">Print Report</button>
-      <a class="btn btn-primary" href="/">Analyze Another Site</a>
+    <!-- ===== ACTIONS ROW ===== -->
+    <div class="actions animate-in stagger-8">
+      <a class="btn btn-secondary" href="/static/analyses/{{ analysis_id }}/summary.json" download="report_{{ analysis_id }}.json">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><polyline points="9 15 12 18 15 15"></polyline></svg>
+        Download JSON
+      </a>
+      <button class="btn btn-secondary" type="button" onclick="downloadCSV()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        Download CSV
+      </button>
+      <a class="btn btn-secondary" href="{{ images.result }}" download="annotated_{{ analysis_id }}.jpg">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Image
+      </a>
+      <button class="btn btn-secondary" type="button" onclick="window.print()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print Page
+      </button>
     </div>
   </main>
 
+  <!-- ===== LIGHTBOX ===== -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Image zoom display">
+    <button class="lightbox-close" id="lightboxClose" aria-label="Close zoom viewer">✕</button>
+    <div class="lightbox-content">
+      <img id="lightboxImg" src="" alt="">
+      <div class="lightbox-title" id="lightboxTitle"></div>
+    </div>
+  </div>
+
   <script>
-    const comparison = document.getElementById('comparison');
-    const afterLayer = document.getElementById('afterLayer');
-    const afterCompareImage = document.getElementById('afterCompareImage');
-    const sliderLine = document.getElementById('sliderLine');
-    const sliderKnob = document.getElementById('sliderKnob');
-    let dragging = false;
+    /* ==============================================
+       COUNT-UP ANIMATIONS
+       ============================================== */
+    function animateCountUp(el) {
+      const target = parseFloat(el.dataset.target);
+      const decimals = parseInt(el.dataset.decimals) || 0;
+      const duration = 1200;
+      const startTime = performance.now();
 
-    function syncAfterImageWidth() {
-      afterCompareImage.style.width = `${comparison.getBoundingClientRect().width}px`;
+      function easeOutExpo(t) {
+        return t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
+      }
+
+      function tick(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const value = target * easeOutExpo(progress);
+        el.textContent = value.toLocaleString(undefined, {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals
+        });
+        if (progress < 1) {
+          requestAnimationFrame(tick);
+        } else {
+          el.textContent = target.toLocaleString(undefined, {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+          });
+        }
+      }
+      requestAnimationFrame(tick);
     }
 
-    function setSlider(clientX) {
-      const rect = comparison.getBoundingClientRect();
-      const x = Math.min(Math.max(clientX - rect.left, 0), rect.width);
-      const percent = (x / rect.width) * 100;
-      afterLayer.style.width = `${percent}%`;
-      sliderLine.style.left = `${percent}%`;
-      sliderKnob.style.left = `${percent}%`;
-    }
+    const countObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          animateCountUp(entry.target);
+          countObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
 
-    function pointerX(event) {
-      return event.touches ? event.touches[0].clientX : event.clientX;
-    }
+    document.querySelectorAll('.count-up').forEach(el => countObserver.observe(el));
 
-    sliderKnob.addEventListener('mousedown', () => { dragging = true; });
-    sliderKnob.addEventListener('touchstart', () => { dragging = true; }, { passive: true });
-    comparison.addEventListener('click', (event) => setSlider(event.clientX));
+    /* ==============================================
+       MULTI-MODE SITE VISUALIZATION
+       ============================================= */
+    const imagesMeta = {
+      result: "{{ images.result }}",
+      mask: "{{ images.mask }}",
+      heatmap: "{{ images.heatmap }}",
+      before: "{{ images.before }}",
+      after: "{{ images.after }}"
+    };
 
-    document.addEventListener('mousemove', (event) => {
-      if (dragging) setSlider(pointerX(event));
+    const modeButtons   = document.querySelectorAll('.mode-btn');
+    const sliderMode    = document.getElementById('comparisonMode');
+    const staticMode    = document.getElementById('staticMode');
+    const staticImage   = document.getElementById('staticImage');
+    const svgOverlay    = document.getElementById('svgOverlay');
+    let activeMode      = 'slider';
+
+    modeButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.mode;
+        
+        // Update tabs active state
+        modeButtons.forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+        activeMode = mode;
+
+        if (mode === 'slider') {
+          staticMode.classList.remove('active');
+          sliderMode.classList.add('active');
+        } else {
+          sliderMode.classList.remove('active');
+          staticMode.classList.add('active');
+          
+          // Switch image source
+          staticImage.src = imagesMeta[mode];
+          staticImage.alt = btn.textContent;
+          
+          // Toggle Bounding Box SVG overlay (Only on annotated result)
+          if (mode === 'result') {
+            svgOverlay.classList.add('active');
+          } else {
+            svgOverlay.classList.remove('active');
+          }
+        }
+      });
     });
 
-    document.addEventListener('touchmove', (event) => {
-      if (dragging) setSlider(pointerX(event));
+    /* ==============================================
+       SPLIT COMPARISON SLIDER
+       ============================================== */
+    const comparison   = document.getElementById('comparisonMode');
+    const afterLayer   = document.getElementById('afterLayer');
+    const afterImg     = document.getElementById('afterCompareImage');
+    const sliderLine   = document.getElementById('sliderLine');
+    const sliderKnob   = document.getElementById('sliderKnob');
+    const labelBefore  = document.getElementById('labelBefore');
+    const labelAfter   = document.getElementById('labelAfter');
+    let dragging = false;
+
+    function syncSliderWidth() {
+      if (afterImg && comparison) {
+        afterImg.style.width = comparison.getBoundingClientRect().width + 'px';
+      }
+    }
+
+    function updateSlider(clientX) {
+      const rect = comparison.getBoundingClientRect();
+      const x = Math.min(Math.max(clientX - rect.left, 0), rect.width);
+      const pct = (x / rect.width) * 100;
+      afterLayer.style.width = pct + '%';
+      sliderLine.style.left  = pct + '%';
+      sliderKnob.style.left  = pct + '%';
+
+      if (labelBefore) labelBefore.style.opacity = Math.min(1, (100 - pct) / 20);
+      if (labelAfter)  labelAfter.style.opacity  = Math.min(1, pct / 20);
+    }
+
+    sliderKnob.addEventListener('mousedown',  () => { dragging = true; });
+    sliderKnob.addEventListener('touchstart', () => { dragging = true; }, { passive: true });
+
+    comparison.addEventListener('click', (e) => {
+      if (e.target !== sliderKnob) updateSlider(e.clientX);
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (dragging) { e.preventDefault(); updateSlider(e.clientX); }
+    });
+    document.addEventListener('touchmove', (e) => {
+      if (dragging && e.touches.length) updateSlider(e.touches[0].clientX);
     }, { passive: true });
 
-    document.addEventListener('mouseup', () => { dragging = false; });
+    document.addEventListener('mouseup',  () => { dragging = false; });
     document.addEventListener('touchend', () => { dragging = false; });
-    window.addEventListener('resize', syncAfterImageWidth);
-    syncAfterImageWidth();
+
+    window.addEventListener('resize', syncSliderWidth);
+    window.addEventListener('load', syncSliderWidth);
+    syncSliderWidth();
+
+    /* ==============================================
+       BOUNDING BOX HOVER CORRELATION
+       ============================================== */
+    const tableRows = document.querySelectorAll('.yolo-table-row');
+    const boxGroups = document.querySelectorAll('.yolo-box-group');
+
+    tableRows.forEach(row => {
+      row.addEventListener('mouseenter', () => {
+        const index = row.dataset.index;
+        const box = document.querySelector(`.yolo-box-group[data-index="${index}"]`);
+        if (box) box.classList.add('highlighted');
+      });
+      row.addEventListener('mouseleave', () => {
+        const index = row.dataset.index;
+        const box = document.querySelector(`.yolo-box-group[data-index="${index}"]`);
+        if (box) box.classList.remove('highlighted');
+      });
+    });
+
+    boxGroups.forEach(box => {
+      box.addEventListener('mouseenter', () => {
+        const index = box.dataset.index;
+        const row = document.querySelector(`.yolo-table-row[data-index="${index}"]`);
+        if (row) {
+          row.classList.add('highlighted-row');
+          row.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
+      box.addEventListener('mouseleave', () => {
+        const index = box.dataset.index;
+        const row = document.querySelector(`.yolo-table-row[data-index="${index}"]`);
+        if (row) row.classList.remove('highlighted-row');
+      });
+    });
+
+    /* ==============================================
+       CSV DATA EXPORTER
+       ============================================== */
+    function downloadCSV() {
+      const yoloData = {{ yolo_objects|tojson }};
+      const regionsData = {{ regions_data|tojson }};
+      
+      let csvContent = "\uFEFF"; // Byte Order Mark for Excel UTF-8 representation
+      
+      csvContent += "BuildWatch AI Analysis Report\n";
+      csvContent += `Timestamp,${"{{ timestamp }}"}\n`;
+      csvContent += `Risk Level,${"{{ risk }}"}\n`;
+      csvContent += `Scene Change %,${"{{ confidence }}%"}\n`;
+      csvContent += `Changed Regions Count,${"{{ regions }}"}\n`;
+      csvContent += `YOLO Detections Count,${"{{ yolo_detections }}"}\n\n`;
+      
+      csvContent += "YOLO Object Scan Index\n";
+      csvContent += "Class Identifier,Confidence,x1,y1,x2,y2\n";
+      yoloData.forEach(obj => {
+        csvContent += `"${obj.label}",${obj.confidence},${obj.x1},${obj.y1},${obj.x2},${obj.y2}\n`;
+      });
+      csvContent += "\n";
+      
+      csvContent += "Detected Change Regions\n";
+      csvContent += "Index,Bounding x,Bounding y,Width,Height,Area Pixels\n";
+      regionsData.forEach((region, i) => {
+        csvContent += `${i+1},${region.x},${region.y},${region.width},${region.height},${region.area}\n`;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `report_${"{{ analysis_id }}"}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    /* ==============================================
+       LIGHTBOX & ZOOM
+       ============================================== */
+    const lightbox      = document.getElementById('lightbox');
+    const lightboxImg   = document.getElementById('lightboxImg');
+    const lightboxTitle = document.getElementById('lightboxTitle');
+    const lightboxClose = document.getElementById('lightboxClose');
+
+    function openLightbox(src, title) {
+      lightboxImg.src = src;
+      lightboxImg.alt = title;
+      lightboxTitle.textContent = title;
+      lightbox.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function zoomActiveImage() {
+      if (activeMode !== 'slider') {
+        const titleText = document.querySelector(`.mode-btn[data-mode="${activeMode}"]`).textContent;
+        openLightbox(imagesMeta[activeMode], titleText);
+      }
+    }
+
+    lightboxClose.addEventListener('click', () => {
+      lightbox.classList.remove('active');
+      document.body.style.overflow = '';
+      setTimeout(() => { lightboxImg.src = ''; }, 300);
+    });
+
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+        setTimeout(() => { lightboxImg.src = ''; }, 300);
+      }
+    });
+
+    /* ==============================================
+       PIPELINE STATUS ANIMATION
+       ============================================== */
+    const pipelineItems = [
+      document.getElementById('pipe1'),
+      document.getElementById('pipe2'),
+      document.getElementById('pipe3'),
+      document.getElementById('pipe4')
+    ];
+
+    pipelineItems.forEach((item, idx) => {
+      setTimeout(() => {
+        if (item) item.classList.add('done');
+      }, (idx + 1) * 350);
+    });
   </script>
 </body>
 </html>

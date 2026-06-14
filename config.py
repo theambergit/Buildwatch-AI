@@ -36,13 +36,15 @@ class Config:
         int(os.getenv("MORPHOLOGY_KERNEL_SIZE", 5)),
         int(os.getenv("MORPHOLOGY_KERNEL_SIZE", 5))
     )
+    MAX_IMAGE_DIMENSION = int(os.getenv("MAX_IMAGE_DIMENSION", 1280))
+    JPEG_QUALITY = int(os.getenv("JPEG_QUALITY", 85))
     
     # Logging
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
     LOG_FILE = os.getenv("LOG_FILE", "buildwatch.log")
     
     # Model
-    YOLO_MODEL = os.getenv("YOLO_MODEL", "yolov8n.pt")
+    YOLO_MODEL = os.getenv("YOLO_MODEL", "yolov8n.onnx")
     USE_GPU = os.getenv("USE_GPU", "False").lower() == "true"
 
 

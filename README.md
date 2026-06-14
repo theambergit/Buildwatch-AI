@@ -55,10 +55,33 @@ pip install -r requirements.txt
 ### Running the Application
 
 ```bash
-python app.py
+python3 app.py
 ```
 
 Visit `http://localhost:5000` in your browser.
+
+If you are using the included virtual environment on macOS/Linux:
+
+```bash
+source .venv/bin/activate
+python app.py
+```
+
+You can also run it directly without activation:
+
+```bash
+.venv/bin/python app.py
+```
+
+### Quick Verification
+
+Run the smoke test:
+
+```bash
+.venv/bin/python tests/smoke_test.py
+```
+
+Then open `http://localhost:5000/demo` to run the bundled sample images without uploading anything.
 
 ---
 
