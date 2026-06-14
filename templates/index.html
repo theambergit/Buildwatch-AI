@@ -4,54 +4,332 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BuildWatch AI — Intelligent Construction Monitoring</title>
-  <meta name="description" content="AI-powered construction monitoring. Upload before and after site imagery to detect changes, assess risk, and generate actionable reports with YOLO object detection.">
-  <meta name="keywords" content="construction monitoring, AI, change detection, YOLO, site analysis, BuildWatch">
+  <meta name="description" content="AI-powered construction site monitoring. Upload before and after imagery to instantly detect changes, assess risk, and generate actionable reports powered by YOLO object detection.">
+  <meta name="keywords" content="construction monitoring, AI, change detection, YOLO, site analysis, BuildWatch, drone imagery, satellite">
   <meta name="author" content="BuildWatch AI">
 
   <!-- Open Graph -->
   <meta property="og:title" content="BuildWatch AI — Intelligent Construction Monitoring">
-  <meta property="og:description" content="Spot construction changes before they become surprises. AI-powered change detection and risk assessment from satellite and drone imagery.">
+  <meta property="og:description" content="Spot construction changes before they become surprises. AI-powered change detection and risk assessment.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="/">
-  <meta property="og:site_name" content="BuildWatch AI">
 
+  <!-- Performance: preconnect to font origins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Main stylesheet (already imports Plus Jakarta Sans + Inter) -->
   <link rel="stylesheet" href="/static/style.css">
+
   <style>
+    /* ── Display font stack: Styrene B → Space Grotesk (closest free match) → system ── */
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+    :root {
+      --font-display: 'Styrene B', 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
+    }
+
     /* ── Hero ── */
     .hero {
-      max-width: 640px;
-      margin-bottom: var(--space-2xl);
+      padding: 64px 0 72px;
+      max-width: 780px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent-light);
+      background: var(--accent-subtle);
+      border: 1px solid rgba(99,102,241,0.2);
+      border-radius: var(--radius-full);
+      padding: 5px 14px;
+      margin-bottom: 28px;
+    }
+
+    .hero-eyebrow-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease-in-out infinite;
     }
 
     .hero h1 {
-      font-size: 3rem;
+      font-family: var(--font-display);
+      font-size: clamp(2.6rem, 6vw, 4.2rem);
       font-weight: 700;
-      letter-spacing: -0.03em;
-      line-height: 1.08;
-      margin-bottom: 14px;
-      background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      margin-bottom: 20px;
+      color: var(--text-primary);
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, #818cf8 0%, #c4b5fd 60%, #6366f1 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
 
-    .hero .accent-dot {
-      -webkit-text-fill-color: var(--accent);
-      background: none;
+    .hero-sub {
+      font-size: 1.08rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      max-width: 520px;
+      margin-bottom: 36px;
     }
 
-    .hero p {
-      font-size: 1.05rem;
+    .hero-cta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .hero-cta-note {
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+    }
+
+    /* ── Stats strip ── */
+    .stats-strip {
+      display: flex;
+      gap: 40px;
+      padding: 28px 0;
+      border-top: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--border-light);
+      margin-bottom: 72px;
+      flex-wrap: wrap;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .stat-value {
+      font-family: var(--font-display);
+      font-size: 1.7rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      font-weight: 500;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .section-heading {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+      line-height: 1.15;
+    }
+
+    .section-sub {
       color: var(--text-secondary);
-      font-weight: 400;
+      font-size: 0.95rem;
+      line-height: 1.6;
       max-width: 480px;
+      margin-bottom: 40px;
+    }
+
+    /* ── How it works ── */
+    .how-it-works {
+      margin-bottom: 80px;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      background: var(--border-light);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .step-card {
+      background: var(--bg-surface);
+      padding: 32px 28px;
+      position: relative;
+      transition: background var(--duration-normal) ease;
+    }
+
+    .step-card:hover { background: var(--bg-surface-hover); }
+
+    .step-num {
+      font-family: var(--font-display);
+      font-size: 3.5rem;
+      font-weight: 700;
+      letter-spacing: -0.05em;
+      color: var(--border-mid);
+      line-height: 1;
+      margin-bottom: 20px;
+      display: block;
+    }
+
+    .step-icon {
+      width: 40px; height: 40px;
+      border-radius: var(--radius-md);
+      background: var(--accent-subtle);
+      display: grid;
+      place-items: center;
+      margin-bottom: 16px;
+      font-size: 1.2rem;
+    }
+
+    .step-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .step-desc {
+      font-size: 0.83rem;
+      color: var(--text-secondary);
       line-height: 1.6;
     }
 
+    /* ── Features ── */
+    .features-section {
+      margin-bottom: 80px;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1px;
+      background: var(--border-light);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .feature-card {
+      background: var(--bg-surface);
+      padding: 28px;
+      transition: background var(--duration-normal) ease;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .feature-card:hover { background: var(--bg-surface-hover); }
+
+    .feature-icon {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      display: grid;
+      place-items: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .feature-icon.violet { background: rgba(99,102,241,0.12); }
+    .feature-icon.emerald { background: rgba(34,197,94,0.12); }
+    .feature-icon.amber { background: rgba(245,158,11,0.12); }
+    .feature-icon.rose { background: rgba(239,68,68,0.12); }
+
+    .feature-title {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .feature-desc {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.65;
+    }
+
+    /* ── Use Cases ── */
+    .use-cases {
+      margin-bottom: 80px;
+    }
+
+    .use-cases-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--border-light);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .use-case-row {
+      background: var(--bg-surface);
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 22px 28px;
+      transition: background var(--duration-normal) ease;
+    }
+
+    .use-case-row:hover { background: var(--bg-surface-hover); }
+
+    .use-case-tag {
+      flex-shrink: 0;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent-light);
+      background: var(--accent-subtle);
+      border: 1px solid rgba(99,102,241,0.15);
+      border-radius: var(--radius-full);
+      padding: 4px 10px;
+      margin-top: 2px;
+    }
+
+    .use-case-body { flex: 1; }
+
+    .use-case-title {
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .use-case-desc {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
     /* ── Upload Panel ── */
+    .upload-section {
+      margin-bottom: 24px;
+    }
+
     .upload-panel {
       position: relative;
-      max-width: 680px;
     }
 
     .panel-header {
@@ -59,13 +337,16 @@
     }
 
     .panel-header h2 {
-      font-size: 1.3rem;
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
       margin-bottom: 4px;
     }
 
     .panel-header p {
       color: var(--text-secondary);
-      font-size: 0.88rem;
+      font-size: 0.83rem;
     }
 
     /* ── Error Banner ── */
@@ -77,22 +358,21 @@
       background: var(--danger-bg);
       color: var(--danger-text);
       font-weight: 500;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       display: flex;
       align-items: center;
       gap: 10px;
-      animation: fadeInDown 0.4s var(--ease-out-expo) both;
+      animation: fadeInDown 0.35s var(--ease-out-expo) both;
     }
 
     .error-banner-icon {
       flex-shrink: 0;
-      width: 20px;
-      height: 20px;
+      width: 18px; height: 18px;
       border-radius: 50%;
-      background: rgba(239, 68, 68, 0.3);
+      background: rgba(239,68,68,0.25);
       display: grid;
       place-items: center;
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       color: var(--danger);
     }
 
@@ -100,32 +380,30 @@
     .upload-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
+      gap: 12px;
+      margin-bottom: var(--space-lg);
     }
 
-    /* ── Drop Zones ── */
     .drop-zone {
       position: relative;
-      min-height: 230px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 190px;
       border: 1.5px dashed var(--border-mid);
-      border-radius: var(--radius-lg);
-      background: var(--bg-base);
-      overflow: hidden;
+      border-radius: var(--radius-md);
+      background: var(--bg-surface);
       cursor: pointer;
-      transition: all var(--duration-normal) var(--ease-spring);
+      overflow: hidden;
+      transition: border-color var(--duration-normal) ease,
+                  background var(--duration-normal) ease;
     }
 
     .drop-zone:hover,
     .drop-zone.drag-active {
       border-color: var(--accent);
       background: var(--accent-subtle);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.1);
-    }
-
-    .drop-zone.has-file {
-      border-style: solid;
-      border-color: var(--accent);
     }
 
     .drop-zone input[type="file"] {
@@ -133,125 +411,105 @@
       inset: 0;
       opacity: 0;
       cursor: pointer;
-      z-index: 2;
+      width: 100%;
+      height: 100%;
     }
 
     .drop-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 20px;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .drop-step {
+      font-family: var(--font-display);
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: var(--border-mid);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .drop-title {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .drop-desc {
+      font-size: 0.75rem;
+      color: var(--text-tertiary);
+      line-height: 1.4;
+    }
+
+    .drop-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 0.72rem;
+      color: var(--accent-light);
+      background: var(--accent-subtle);
+      border: 1px solid rgba(99,102,241,0.15);
+      border-radius: var(--radius-full);
+      padding: 4px 12px;
+    }
+
+    /* ── File Preview ── */
+    .drop-zone.has-file .drop-content { display: none; }
+
+    .preview-wrap {
       position: absolute;
       inset: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      text-align: center;
-      padding: 24px;
-      gap: 4px;
-    }
-
-    .drop-step {
-      width: 42px;
-      height: 42px;
-      border-radius: var(--radius-md);
-      background: var(--bg-surface);
-      border: 1px solid var(--border-light);
-      display: grid;
-      place-items: center;
-      font-family: var(--font-secondary);
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--text-tertiary);
-      margin-bottom: 14px;
-      transition: all var(--duration-normal) ease;
-    }
-
-    .drop-zone:hover .drop-step {
-      border-color: var(--accent);
-      color: var(--accent);
-      background: var(--accent-subtle);
-    }
-
-    .drop-title {
-      display: block;
-      color: var(--text-primary);
-      font-weight: 600;
-      font-size: 0.9rem;
-      margin-bottom: 4px;
-    }
-
-    .drop-desc {
-      color: var(--text-tertiary);
-      font-size: 0.8rem;
-      line-height: 1.5;
-      max-width: 180px;
-    }
-
-    .drop-hint {
-      display: flex;
-      align-items: center;
       gap: 6px;
-      margin-top: 16px;
-      color: var(--text-tertiary);
-      font-size: 0.75rem;
-      font-weight: 500;
-    }
-
-    .drop-hint-icon {
-      font-size: 0.85rem;
-    }
-
-    /* ── Preview ── */
-    .preview-wrap {
-      position: absolute;
-      inset: 0;
-      display: none;
+      padding: 8px;
     }
 
     .preview-wrap img {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      border-radius: calc(var(--radius-md) - 2px);
+      opacity: 0;
+      animation: fadeIn 0.3s ease forwards;
     }
 
     .preview-label {
       position: absolute;
-      left: 10px;
-      bottom: 10px;
-      max-width: calc(100% - 20px);
-      padding: 5px 10px;
-      background: rgba(17, 17, 19, 0.85);
+      bottom: 8px;
+      left: 8px;
+      right: 8px;
+      font-size: 0.7rem;
+      color: white;
+      background: rgba(0,0,0,0.65);
       backdrop-filter: blur(8px);
-      color: var(--text-primary);
-      font-size: 0.72rem;
-      font-weight: 500;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      padding: 4px 8px;
       border-radius: var(--radius-sm);
-      border: 1px solid var(--border-light);
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
     }
 
     .preview-size {
       position: absolute;
-      right: 10px;
-      top: 10px;
-      padding: 4px 8px;
-      background: rgba(17, 17, 19, 0.85);
-      backdrop-filter: blur(8px);
-      color: var(--accent-hover);
-      font-size: 0.7rem;
+      top: 8px;
+      right: 8px;
+      font-size: 0.65rem;
       font-weight: 600;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--border-light);
-      font-family: var(--font-secondary);
-    }
-
-    .drop-zone.has-file .drop-content {
-      display: none;
-    }
-
-    .drop-zone.has-file .preview-wrap {
-      display: block;
-      animation: fadeIn 0.4s var(--ease-out-expo) both;
+      color: white;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(8px);
+      padding: 3px 8px;
+      border-radius: var(--radius-full);
     }
 
     /* ── Form Footer ── */
@@ -259,143 +517,133 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 16px;
-      margin-top: var(--space-lg);
-      padding-top: var(--space-md);
-      border-top: 1px solid var(--border-light);
+      gap: 12px;
     }
 
     .form-note {
+      font-size: 0.75rem;
       color: var(--text-tertiary);
-      font-size: 0.8rem;
     }
 
     .analyze-btn {
-      min-width: 180px;
-      padding: 12px 28px !important;
-      font-size: 0.9rem !important;
+      padding: 11px 24px;
+      font-size: 0.88rem;
+      gap: 8px;
     }
 
-    /* ── Loading Overlay (Panel-scoped) ── */
-    .upload-panel .loading-overlay {
-      position: absolute;
-      inset: 0;
-      z-index: 20;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 28px;
-      background: var(--bg-overlay);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-radius: var(--radius-lg);
-      pointer-events: all;
-      opacity: 1;
-    }
-
-    .upload-panel .loading-overlay.active {
-      display: flex;
-      animation: fadeIn 0.3s var(--ease-out-expo) both;
-    }
-
+    /* ── Loading Steps ── */
     .loading-spinner-ring {
-      width: 44px;
-      height: 44px;
+      width: 48px; height: 48px;
       border: 2px solid var(--border-light);
       border-top-color: var(--accent);
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
+      animation: spin 0.9s linear infinite;
     }
 
     .loading-steps {
       display: flex;
       flex-direction: column;
       gap: 10px;
-      align-items: center;
+      min-width: 240px;
     }
 
     .loading-step {
       display: flex;
       align-items: center;
-      gap: 10px;
-      color: var(--text-tertiary);
+      gap: 12px;
       font-size: 0.85rem;
-      font-weight: 500;
+      color: var(--text-tertiary);
       opacity: 0;
-      transform: translateY(8px);
-      transition: all 0.5s var(--ease-out-expo);
+      transform: translateX(-12px);
+      transition: all 0.4s var(--ease-out-expo);
     }
 
     .loading-step.visible {
       opacity: 1;
-      transform: translateY(0);
-      color: var(--text-secondary);
-    }
-
-    .loading-step.visible .step-check {
-      background: var(--success);
-      color: white;
-      border-color: transparent;
+      transform: none;
+      color: var(--text-primary);
     }
 
     .step-check {
-      width: 22px;
-      height: 22px;
+      width: 20px; height: 20px;
       border-radius: 50%;
-      border: 1.5px solid var(--border-light);
-      background: var(--bg-base);
+      background: var(--accent-subtle);
+      border: 1px solid rgba(99,102,241,0.25);
+      color: var(--accent);
+      font-size: 0.65rem;
       display: grid;
       place-items: center;
-      font-size: 0.6rem;
-      transition: all 0.4s var(--ease-spring);
-      color: transparent;
+      flex-shrink: 0;
     }
 
     .loading-pulse-text {
-      color: var(--text-tertiary);
+      font-family: var(--font-display);
       font-size: 0.78rem;
       font-weight: 600;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
       animation: pulseFade 1.8s ease-in-out infinite;
     }
 
+    /* ── Footer ── */
+    .footer-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-tertiary);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 20px;
+    }
+
+    .footer-links a {
+      font-size: 0.78rem;
+      color: var(--text-tertiary);
+      transition: color var(--duration-normal) ease;
+    }
+
+    .footer-links a:hover { color: var(--text-secondary); }
+
     /* ── Responsive ── */
     @media (max-width: 768px) {
-      .hero h1 {
-        font-size: 2rem;
-      }
-
-      .upload-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .form-footer {
-        flex-direction: column;
-        align-items: stretch;
-      }
-
-      .analyze-btn {
-        width: 100%;
-      }
+      .hero { padding: 40px 0 48px; }
+      .hero h1 { font-size: 2.4rem; }
+      .steps-grid { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
+      .stats-strip { gap: 24px; }
+      .upload-grid { grid-template-columns: 1fr; }
+      .form-footer { flex-direction: column; align-items: flex-start; }
     }
 
     @media (max-width: 480px) {
-      .panel-header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
+      .hero { padding: 32px 0 40px; }
+      .hero-cta { flex-direction: column; align-items: flex-start; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
 <body>
-
   <main class="page">
+
     <!-- ── Topbar ── -->
-    <nav class="topbar" aria-label="BuildWatch AI navigation">
-      <a href="/" class="brand" style="text-decoration: none;">
-        <span class="brand-mark" aria-hidden="true">BW</span>
-        <span>BuildWatch AI</span>
+    <nav class="topbar" aria-label="Main navigation">
+      <a href="/" class="brand" style="text-decoration:none">
+        <img src="/static/logo.png" alt="BuildWatch AI logo" width="32" height="32"
+             style="border-radius:6px; flex-shrink:0;" loading="eager">
+        <span style="font-family: var(--font-display, 'Space Grotesk', sans-serif); font-weight:700; letter-spacing:-0.02em;">BuildWatch AI</span>
       </a>
       <div class="topbar-nav">
         <a href="/" class="topbar-link active">Analyze</a>
@@ -404,95 +652,245 @@
     </nav>
 
     <!-- ── Hero ── -->
-    <section class="hero animate-in">
-      <h1>AI-powered site change detection<span class="accent-dot">.</span></h1>
-      <p>Upload before &amp; after imagery to detect construction changes, assess risk levels, and generate detailed visual reports.</p>
+    <section class="hero animate-in" aria-labelledby="hero-heading">
+      <div class="hero-eyebrow">
+        <span class="hero-eyebrow-dot" aria-hidden="true"></span>
+        AI-Powered · Real-time · Free to use
+      </div>
+
+      <h1 id="hero-heading">
+        See every change.<br>
+        <em>Before it's a problem.</em>
+      </h1>
+
+      <p class="hero-sub">
+        BuildWatch AI uses computer vision and YOLO object detection to compare
+        construction site images — pinpointing structural changes, quantifying risk,
+        and delivering instant visual reports without any manual review.
+      </p>
+
+      <div class="hero-cta">
+        <a href="#analyze" class="btn btn-primary" style="padding:12px 28px; font-size:0.9rem;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Start analyzing
+        </a>
+        <a href="/history" class="btn btn-secondary" style="padding:12px 28px; font-size:0.9rem;">View past reports</a>
+        <span class="hero-cta-note">No account needed · Works in seconds</span>
+      </div>
+    </section>
+
+    <!-- ── Stats Strip ── -->
+    <div class="stats-strip animate-in stagger-2" aria-label="Platform statistics">
+      <div class="stat-item">
+        <span class="stat-value">YOLOv8</span>
+        <span class="stat-label">Object detection model</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">&lt;30s</span>
+        <span class="stat-label">Average analysis time</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">5+</span>
+        <span class="stat-label">Visual outputs per report</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value">3-tier</span>
+        <span class="stat-label">Risk classification</span>
+      </div>
+    </div>
+
+    <!-- ── How It Works ── -->
+    <section class="how-it-works animate-in stagger-3" aria-labelledby="how-heading">
+      <p class="section-label">How it works</p>
+      <h2 class="section-heading" id="how-heading">Three steps to a full site report</h2>
+      <p class="section-sub">From raw imagery to a detailed AI report in under a minute — no expertise required.</p>
+
+      <div class="steps-grid">
+        <div class="step-card">
+          <span class="step-num" aria-hidden="true">01</span>
+          <div class="step-icon" aria-hidden="true">📷</div>
+          <p class="step-title">Upload your images</p>
+          <p class="step-desc">Provide a historical "before" image and the latest "after" capture — drone, satellite, or any site photo. JPG and PNG up to 50 MB.</p>
+        </div>
+        <div class="step-card">
+          <span class="step-num" aria-hidden="true">02</span>
+          <div class="step-icon" aria-hidden="true">🤖</div>
+          <p class="step-title">AI change detection runs</p>
+          <p class="step-desc">OpenCV pixel-diff analysis, Gaussian filtering, and YOLOv8 object detection identify exactly what changed, where, and how much.</p>
+        </div>
+        <div class="step-card">
+          <span class="step-num" aria-hidden="true">03</span>
+          <div class="step-icon" aria-hidden="true">📊</div>
+          <p class="step-title">Get your visual report</p>
+          <p class="step-desc">Receive annotated images, heatmaps, a risk score (Low / Medium / High), region data, object inventory, and downloadable CSV/JSON.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Features ── -->
+    <section class="features-section animate-in stagger-4" aria-labelledby="features-heading">
+      <p class="section-label">Capabilities</p>
+      <h2 class="section-heading" id="features-heading">What the AI looks for</h2>
+      <p class="section-sub">A full analysis pipeline — from raw pixel difference to actionable risk intelligence.</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon violet" aria-hidden="true">🔍</div>
+          <p class="feature-title">Pixel-level change detection</p>
+          <p class="feature-desc">Compares grayscale histograms with Gaussian blur and morphological operations to isolate genuine structural changes from noise or lighting differences.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon emerald" aria-hidden="true">🏗️</div>
+          <p class="feature-title">YOLO object recognition</p>
+          <p class="feature-desc">YOLOv8n scans the current site image to identify and locate construction equipment, vehicles, personnel, and structures — with confidence scores and bounding boxes.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon amber" aria-hidden="true">⚠️</div>
+          <p class="feature-title">Automated risk scoring</p>
+          <p class="feature-desc">A three-tier risk model (Low, Medium, High) based on changed pixel percentage, region count, and detected activity — giving you an instant site health summary.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon rose" aria-hidden="true">🗺️</div>
+          <p class="feature-title">Change heatmaps & masks</p>
+          <p class="feature-desc">Visual heatmaps highlight activity intensity across the site. Binary masks show exactly which zones changed. Export everything as images, JSON, or CSV for your records.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Use Cases ── -->
+    <section class="use-cases animate-in stagger-5" aria-labelledby="usecases-heading">
+      <p class="section-label">Use cases</p>
+      <h2 class="section-heading" id="usecases-heading">Built for every monitoring need</h2>
+      <p class="section-sub">Whether you're managing a single site or tracking a portfolio, BuildWatch AI adapts to your workflow.</p>
+
+      <div class="use-cases-list">
+        <div class="use-case-row">
+          <span class="use-case-tag">Progress</span>
+          <div class="use-case-body">
+            <p class="use-case-title">Construction progress tracking</p>
+            <p class="use-case-desc">Compare weekly or monthly site captures to document and verify build progress against your timeline — no manual annotation needed.</p>
+          </div>
+        </div>
+        <div class="use-case-row">
+          <span class="use-case-tag">Safety</span>
+          <div class="use-case-body">
+            <p class="use-case-title">Safety & compliance monitoring</p>
+            <p class="use-case-desc">Detect unexpected changes in restricted zones, identify equipment placement violations, or spot unauthorized site access from aerial imagery.</p>
+          </div>
+        </div>
+        <div class="use-case-row">
+          <span class="use-case-tag">Insurance</span>
+          <div class="use-case-body">
+            <p class="use-case-title">Pre- and post-incident documentation</p>
+            <p class="use-case-desc">Generate timestamped, annotated reports before and after incidents for insurance claims, legal records, or dispute resolution.</p>
+          </div>
+        </div>
+        <div class="use-case-row">
+          <span class="use-case-tag">Audit</span>
+          <div class="use-case-body">
+            <p class="use-case-title">Environmental & site audit</p>
+            <p class="use-case-desc">Monitor land-use changes, vegetation clearing, or soil disturbance across large areas using drone or satellite imagery over time.</p>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ── Upload Form ── -->
-    <form id="uploadForm" class="upload-panel panel animate-in stagger-2" action="/upload" method="post" enctype="multipart/form-data">
+    <section class="upload-section" id="analyze" aria-labelledby="analyze-heading">
+      <p class="section-label">Analyze now</p>
+      <h2 class="section-heading" id="analyze-heading">Upload your site images</h2>
+      <p class="section-sub" style="margin-bottom: 24px;">Match the viewpoint between before and after images for best accuracy. JPG, JPEG and PNG supported.</p>
 
-      <!-- Panel Header -->
-      <div class="panel-header">
-        <h2>Analyze a site</h2>
-        <p>Use matching views for best results. JPG, JPEG &amp; PNG supported.</p>
-      </div>
+      <form id="uploadForm" class="upload-panel panel animate-in stagger-6"
+            action="/upload" method="post" enctype="multipart/form-data">
 
-      <!-- Error Banner -->
-      {% if request.args.get('error') %}
-      <div class="error-banner" role="alert">
-        <span class="error-banner-icon" aria-hidden="true">✕</span>
-        {{ request.args.get('error') }}
-      </div>
-      {% endif %}
-
-      <!-- Drop Zones -->
-      <div class="upload-grid">
-        <!-- Before Image -->
-        <label class="drop-zone" id="beforeZone">
-          <input type="file" id="beforeFile" name="before" accept="image/png,image/jpeg" required>
-          <span class="drop-content">
-            <span class="drop-step" aria-hidden="true">01</span>
-            <span class="drop-title">Historical image</span>
-            <span class="drop-desc">Before construction or previous inspection</span>
-            <span class="drop-hint">
-              <span class="drop-hint-icon" aria-hidden="true">📁</span>
-              Click or drag to upload
-            </span>
-          </span>
-          <span class="preview-wrap" id="beforePreview"></span>
-        </label>
-
-        <!-- After Image -->
-        <label class="drop-zone" id="afterZone">
-          <input type="file" id="afterFile" name="after" accept="image/png,image/jpeg" required>
-          <span class="drop-content">
-            <span class="drop-step" aria-hidden="true">02</span>
-            <span class="drop-title">Current image</span>
-            <span class="drop-desc">Latest satellite, drone, or site capture</span>
-            <span class="drop-hint">
-              <span class="drop-hint-icon" aria-hidden="true">📁</span>
-              Click or drag to upload
-            </span>
-          </span>
-          <span class="preview-wrap" id="afterPreview"></span>
-        </label>
-      </div>
-
-      <!-- Footer -->
-      <div class="form-footer">
-        <p class="form-note">Max 50 MB per file · Processing takes a few seconds</p>
-        <button class="btn btn-primary analyze-btn" type="submit" id="analyzeBtn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          Analyze changes
-        </button>
-      </div>
-
-      <!-- Loading Overlay -->
-      <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner-ring"></div>
-        <div class="loading-steps">
-          <div class="loading-step" id="step1">
-            <span class="step-check">✓</span>
-            <span>Uploading images…</span>
-          </div>
-          <div class="loading-step" id="step2">
-            <span class="step-check">✓</span>
-            <span>Running change detection…</span>
-          </div>
-          <div class="loading-step" id="step3">
-            <span class="step-check">✓</span>
-            <span>AI analysis in progress…</span>
-          </div>
+        <!-- Error Banner -->
+        {% if request.args.get('error') %}
+        <div class="error-banner" role="alert">
+          <span class="error-banner-icon" aria-hidden="true">✕</span>
+          {{ request.args.get('error') }}
         </div>
-        <span class="loading-pulse-text">Processing</span>
-      </div>
-    </form>
+        {% endif %}
+
+        <!-- Drop Zones -->
+        <div class="upload-grid">
+          <!-- Before Image -->
+          <label class="drop-zone" id="beforeZone">
+            <input type="file" id="beforeFile" name="before" accept="image/png,image/jpeg" required>
+            <span class="drop-content">
+              <span class="drop-step" aria-hidden="true">01</span>
+              <span class="drop-title">Historical image</span>
+              <span class="drop-desc">Before construction or previous inspection</span>
+              <span class="drop-hint">
+                <span aria-hidden="true">📁</span>
+                Click or drag to upload
+              </span>
+            </span>
+            <span class="preview-wrap" id="beforePreview"></span>
+          </label>
+
+          <!-- After Image -->
+          <label class="drop-zone" id="afterZone">
+            <input type="file" id="afterFile" name="after" accept="image/png,image/jpeg" required>
+            <span class="drop-content">
+              <span class="drop-step" aria-hidden="true">02</span>
+              <span class="drop-title">Current image</span>
+              <span class="drop-desc">Latest satellite, drone, or site capture</span>
+              <span class="drop-hint">
+                <span aria-hidden="true">📁</span>
+                Click or drag to upload
+              </span>
+            </span>
+            <span class="preview-wrap" id="afterPreview"></span>
+          </label>
+        </div>
+
+        <!-- Footer -->
+        <div class="form-footer">
+          <p class="form-note">Max 50 MB per file &middot; Processing takes a few seconds</p>
+          <button class="btn btn-primary analyze-btn" type="submit" id="analyzeBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Analyze changes
+          </button>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" id="loadingOverlay">
+          <div class="loading-spinner-ring" aria-hidden="true"></div>
+          <div class="loading-steps" role="status" aria-live="polite">
+            <div class="loading-step" id="step1">
+              <span class="step-check" aria-hidden="true">✓</span>
+              <span>Uploading images…</span>
+            </div>
+            <div class="loading-step" id="step2">
+              <span class="step-check" aria-hidden="true">✓</span>
+              <span>Running change detection…</span>
+            </div>
+            <div class="loading-step" id="step3">
+              <span class="step-check" aria-hidden="true">✓</span>
+              <span>AI analysis in progress…</span>
+            </div>
+          </div>
+          <span class="loading-pulse-text" aria-hidden="true">Processing</span>
+        </div>
+      </form>
+    </section>
 
     <!-- ── Footer ── -->
     <footer class="site-footer">
-      <p>BuildWatch AI · Intelligent construction monitoring</p>
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <img src="/static/logo.png" alt="BuildWatch AI" width="20" height="20"
+               style="border-radius:4px; opacity:0.5;" loading="lazy">
+          BuildWatch AI &mdash; Intelligent construction monitoring
+        </div>
+        <nav class="footer-links" aria-label="Footer navigation">
+          <a href="/">Analyze</a>
+          <a href="/history">History</a>
+        </nav>
+      </div>
     </footer>
+
   </main>
 
   <script>
@@ -538,16 +936,15 @@
     wirePreview('beforeFile', 'beforeZone', 'beforePreview');
     wirePreview('afterFile',  'afterZone',  'afterPreview');
 
-    /* ── Loading Overlay ── */
+    /* ── Form Validation & Loading ── */
     const uploadForm = document.getElementById('uploadForm');
     const analyzeBtn = document.getElementById('analyzeBtn');
     const overlay    = document.getElementById('loadingOverlay');
 
-    /* ── Form Validation & Loading ── */
     uploadForm.addEventListener('submit', (e) => {
       const before = document.getElementById('beforeFile').files.length;
-      const after = document.getElementById('afterFile').files.length;
-      
+      const after  = document.getElementById('afterFile').files.length;
+
       if (!before || !after) {
         e.preventDefault();
         return;
@@ -556,42 +953,38 @@
       analyzeBtn.disabled = true;
       overlay.classList.add('active');
 
-      const steps = [
-        document.getElementById('step1'),
-        document.getElementById('step2'),
-        document.getElementById('step3')
-      ];
-
-      steps.forEach((step, i) => {
-        setTimeout(() => step.classList.add('visible'), 400 + i * 1200);
+      ['step1', 'step2', 'step3'].forEach((id, i) => {
+        setTimeout(() => document.getElementById(id).classList.add('visible'), 400 + i * 1200);
       });
     });
 
-    /* ── Drag and Drop Styling ── */
+    /* ── Drag and Drop ── */
     function setupDragAndDrop(zoneId) {
       const zone = document.getElementById(zoneId);
       zone.addEventListener('dragover', (e) => {
         e.preventDefault();
         zone.classList.add('drag-active');
       });
-      zone.addEventListener('dragleave', () => {
-        zone.classList.remove('drag-active');
-      });
+      zone.addEventListener('dragleave', () => zone.classList.remove('drag-active'));
       zone.addEventListener('drop', (e) => {
         e.preventDefault();
         zone.classList.remove('drag-active');
         const input = zone.querySelector('input[type="file"]');
         if (e.dataTransfer.files.length) {
           input.files = e.dataTransfer.files;
-          const event = new Event('change');
-          input.dispatchEvent(event);
+          input.dispatchEvent(new Event('change'));
         }
       });
     }
-    
+
     setupDragAndDrop('beforeZone');
     setupDragAndDrop('afterZone');
 
+    /* ── Smooth scroll to analyze section ── */
+    document.querySelector('a[href="#analyze"]').addEventListener('click', (e) => {
+      e.preventDefault();
+      document.getElementById('analyze').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   </script>
 </body>
 </html>

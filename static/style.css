@@ -2,7 +2,7 @@
    BUILDWATCH AI — PREMIUM DESIGN SYSTEM v5
    ============================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 /* ============================================
    ROOT VARIABLES
@@ -57,6 +57,7 @@
   --radius-full: 9999px;
 
   /* Typography */
+  --font-display: 'Styrene B', 'Space Grotesk', 'Plus Jakarta Sans', sans-serif;
   --font-primary: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
   --font-secondary: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
@@ -157,9 +158,9 @@ button {
    ============================================ */
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-primary);
+  font-family: var(--font-display);
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   line-height: 1.15;
   color: var(--text-primary);
 }
@@ -199,17 +200,26 @@ h3 { font-size: 1.15rem; }
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   text-decoration: none;
-  font-size: 1.1rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--text-primary);
   transition: opacity var(--duration-normal) ease;
 }
 
 .brand:hover {
-  opacity: 0.85;
+  opacity: 0.8;
+}
+
+.brand-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 .brand-mark {
@@ -219,7 +229,7 @@ h3 { font-size: 1.15rem; }
   place-items: center;
   background: linear-gradient(135deg, var(--accent), var(--accent-hover));
   color: white;
-  font-family: var(--font-secondary);
+  font-family: var(--font-display);
   font-weight: 700;
   font-size: 0.7rem;
   letter-spacing: 0.08em;
